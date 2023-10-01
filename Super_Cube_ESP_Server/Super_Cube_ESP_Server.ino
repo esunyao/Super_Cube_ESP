@@ -28,7 +28,7 @@ const String Default_Config = "{\"Logger\": {\"Debug\": false}, \"WiFi\": {\"sof
 const byte INIT_FLAG = 1061109;
 const int blockSize = 150;
 
-DynamicJsonDocument Config(512);
+DynamicJsonDocument Config(1024);
 std::map<String, int> pinMap = {
   { "pin1", D1 },
   { "pin2", D2 },
@@ -365,6 +365,14 @@ void setup() {
   EEPROM.end();
   logger.success("初始化完毕");
   server_state.set_server_state(server_state.RUNNING);
+
+  logger.info("开始执行开机任务");
+  {
+    DynamicJsonDocument st(2048);
+    st["step"] = Config["LED"];
+    st["Save"] = false;
+    executeCallback(0, "TurnLight", st);
+  }
 }
 
 void loop() {
@@ -385,6 +393,9 @@ public:
   static void Restart(uint8_t num, JsonDocument& msg);
   static void Reset(uint8_t num, JsonDocument& msg);
   static void TurnLight(uint8_t num, JsonDocument& msg);
+  static void Get_All_Client(uint8_t num, JsonDocument& msg);
+  static void Broadcast(uint8_t num, JsonDocument& msg);
+  static void Send(uint8_t num, JsonDocument& msg);
 };
 CallBackFunctionClass CallBackFunctionClassN;
 
@@ -394,6 +405,39 @@ void addCallbackToMap() {
   addCallback("Restart", CallBackFunctionClassN.Restart);
   addCallback("Reset", CallBackFunctionClassN.Reset);
   addCallback("TurnLight", CallBackFunctionClassN.TurnLight);
+  addCallback("Get_All_Client", CallBackFunctionClassN.Get_All_Client);
+  addCallback("Broadcast", CallBackFunctionClassN.Broadcast);
+  addCallback("Send", CallBackFunctionClassN.Send);
+}
+
+void CallBackFunctionClass::Broadcast(uint8_t num, JsonDocument& msg) {
+  for (const auto& entry : WebSocketsClient) {
+    uint8_t key = entry.first;
+    server.sendTXT(key, msg["info"].as<const char*>());
+  }
+}
+
+void CallBackFunctionClass::Send(uint8_t num, JsonDocument& msg) {
+  server.sendTXT((uint8_t)msg["num"], msg["info"].as<const char*>());
+}
+
+void CallBackFunctionClass::Get_All_Client(uint8_t num, JsonDocument& msg) {
+  {
+    String result = "";
+    DynamicJsonDocument res(1024);
+
+    for (const auto& entry : WebSocketsClient) {
+      uint8_t key = entry.first;
+      const IPAddress& ip = entry.second;
+      res[int(key)] = ip;
+      // 将每个客户端的信息添加到结果字符串中
+      result += "Client ID " + String(key) + ": " + ip.toString() + "\n";
+    }
+    String ress;
+    serializeJson(res, ress);
+    logger.debug(result);
+    server.sendTXT(num, ress);
+  }
 }
 
 void CallBackFunctionClass::Get_Config(uint8_t num, JsonDocument& msg) {
@@ -428,12 +472,14 @@ void CallBackFunctionClass::Reset(uint8_t num, JsonDocument& msg) {
 void CallBackFunctionClass::TurnLight(uint8_t num, JsonDocument& msg) {
   JsonObject step = msg["step"];
 
-  EEPROM.begin(8192);
-  Config["LED"] = msg["step"];
-  Save_Config();
-  EEPROM.commit();
-  EEPROM.end();
-  logger.success("成功设置Config并保存");
+  if (msg["Save"] == true) {
+    EEPROM.begin(8192);
+    Config["LED"] = msg["step"];
+    Save_Config();
+    EEPROM.commit();
+    EEPROM.end();
+    logger.success("成功设置Config并保存");
+  }
 
   for (JsonPair element : step) {
     {
@@ -457,9 +503,9 @@ void CallBackFunctionClass::TurnLight(uint8_t num, JsonDocument& msg) {
           }
           logger.debug("灯珠设定完毕");
         } else if (type.equals("show")) {
-            logger.debug("WS2812 show");
-            stripasd.show();
-          }
+          logger.debug("WS2812 show");
+          stripasd.show();
+        }
       }
       // for (JsonPair element : step)
       //   Adafruit_NeoPixel stripasd = Adafruit_NeoPixel(NUMPIXELS, pinMap[String(element.key().c_str())], NEO_GRB + NEO_KHZ800);

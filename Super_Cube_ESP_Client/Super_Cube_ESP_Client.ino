@@ -28,7 +28,7 @@ const String Default_Config = "{\"Logger\": {\"Debug\": false}, \"WiFi\": {\"sof
 const byte INIT_FLAG = 1061109;
 const int blockSize = 150;
 
-DynamicJsonDocument Config(1024);
+DynamicJsonDocument Config(2048);
 std::map<String, int> pinMap = {
   { "pin1", D1 },
   { "pin2", D2 },
@@ -360,10 +360,19 @@ void setup() {
   EEPROM.end();
   logger.success("初始化完毕");
   server_state.set_server_state(server_state.RUNNING);
+
+  logger.info("开始执行开机任务");
+  {
+    DynamicJsonDocument st(2048);
+    st["step"] = Config["LED"];
+    st["Save"] = false;
+    executeCallback("TurnLight", st);
+  }
 }
 
 void loop() {
   wsClient.loop();
+  
 }
 
 
@@ -424,12 +433,14 @@ void CallBackFunctionClass::TurnLight(JsonDocument& msg) {
 
   JsonObject step = msg["step"];
 
-  EEPROM.begin(8192);
-  Config["LED"] = msg["step"];
-  Save_Config();
-  EEPROM.commit();
-  EEPROM.end();
-  logger.success("成功设置Config并保存");
+  if (msg["Save"] == true) {
+    EEPROM.begin(8192);
+    Config["LED"] = msg["step"];
+    Save_Config();
+    EEPROM.commit();
+    EEPROM.end();
+    logger.success("成功设置Config并保存");
+  }
 
   for (JsonPair element : step) {
     {
@@ -453,9 +464,9 @@ void CallBackFunctionClass::TurnLight(JsonDocument& msg) {
           }
           logger.debug("灯珠设定完毕");
         } else if (type.equals("show")) {
-            logger.debug("WS2812 show");
-            stripasd.show();
-          }
+          logger.debug("WS2812 show");
+          stripasd.show();
+        }
       }
       // for (JsonPair element : step)
       //   Adafruit_NeoPixel stripasd = Adafruit_NeoPixel(NUMPIXELS, pinMap[String(element.key().c_str())], NEO_GRB + NEO_KHZ800);
