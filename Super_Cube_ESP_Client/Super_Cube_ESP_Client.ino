@@ -246,10 +246,10 @@ void addCallbackToMap();
 void Load_WiFi() {
   // WiFi.softAP(String(Config["WiFi"]["softAP"]["ssid"]), String(Config["WiFi"]["softAP"]["passwd"]));
   // 设置静态IP地址
-  logger.success("热点开启成功");
-  IPAddress staticIP;  // 设置静态IP地址
-  IPAddress gateway;   // 设置网关
-  IPAddress subnet;    // 设置子网掩码
+  // logger.success("热点开启成功");
+  // IPAddress staticIP;  // 设置静态IP地址
+  // IPAddress gateway;   // 设置网关
+  // IPAddress subnet;    // 设置子网掩码
   // if (staticIP.fromString(String(Config["WiFi"]["ip"])) && gateway.fromString(String(Config["WiFi"]["gateway"])) && subnet.fromString(String(Config["WiFi"]["subnet"]))) {
   //   // WiFi.config(staticIP, gateway, subnet);
   //   WiFi.softAPConfig(staticIP, staticIP, subnet);
@@ -260,7 +260,7 @@ void Load_WiFi() {
   // IPAddress apIP = WiFi.softAPIP();
   // logger.success("IP:" + apIP.toString());
 
-  WiFi.begin(String(Config["WiFi"]["Connect"]["ssid"]), String(Config["WiFi"]["Connect"]["passwd"]));
+  WiFi.begin(String(Config["WiFi"]["softAP"]["ssid"]), String(Config["WiFi"]["softAP"]["passwd"]));
   for (int i = 0; i <= WIFIConnectTimeOut; i++) {
     if (WiFi.status() == WL_CONNECTED)
       break;
@@ -273,13 +273,13 @@ void Load_WiFi() {
     logger.critical("WiFi连接失败或WiFi设置错误");
   } else {
     logger.success("网络已连接");
-    if ((staticIP.fromString(String(Config["WiFi"]["ip"])) && gateway.fromString(String(Config["WiFi"]["gateway"])) && subnet.fromString(String(Config["WiFi"]["subnet"]))) && Config["WiFi"]["Connect"]["config"]) {
-      WiFi.config(staticIP, gateway, subnet);
-      // WiFi.softAPConfig(staticIP, gateway, subnet);
-      logger.success("已设置网络的静态IP地址、网关和子网掩码");
-    } else {
-      logger.critical("IP地址格式错误");
-    }
+    // if ((staticIP.fromString(String(Config["WiFi"]["ip"])) && gateway.fromString(String(Config["WiFi"]["gateway"])) && subnet.fromString(String(Config["WiFi"]["subnet"]))) && Config["WiFi"]["Connect"]["config"]) {
+    //   WiFi.config(staticIP, gateway, subnet);
+    //   // WiFi.softAPConfig(staticIP, gateway, subnet);
+    //   logger.success("已设置网络的静态IP地址、网关和子网掩码");
+    // } else {
+    //   logger.critical("IP地址格式错误");
+    // }
     IPAddress localIP = WiFi.localIP();
     logger.success("IP:" + localIP.toString());
   }
@@ -349,7 +349,7 @@ void setup() {
 
   // 设置ESP8266工作模式为AP模式
   // WiFi.mode(WIFI);
-  WiFi.mode(WIFI_AP_STA);
+  WiFi.mode(WIFI_STA);
 
   // 启动热点/连接网络
   Load_WiFi();
