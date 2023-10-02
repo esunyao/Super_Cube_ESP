@@ -22,7 +22,7 @@
 #include <Adafruit_NeoPixel.h>
 #include <Adafruit_ILI9341.h>
 
-#define WIFIConnectTimeOut 100
+#define WIFIConnectTimeOut 50
 
 const String Default_Config = "{\"Logger\": {\"Debug\": false}, \"WiFi\": {\"softAP\": {\"ssid\": \"Super_Cube\", \"passwd\": \"FRS8571a8438a712517\", \"ip\": \"192.168.0.140\", \"gateway\": \"192.168.0.140\", \"subnet\": \"255.255.255.0\"}, \"Connect\": {\"ssid\": \"\", \"passwd\": \"\", \"config\": false}, \"ip\": \"192.168.0.140\", \"gateway\": \"192.168.0.1\", \"subnet\": \"255.255.255.0\"}, \"LED\": {}}";
 const byte INIT_FLAG = 1061109;
@@ -346,20 +346,11 @@ void setup() {
 
   // 读取配置
   Load_Config();
-
-  // 设置ESP8266工作模式为AP模式
-  // WiFi.mode(WIFI);
-  WiFi.mode(WIFI_STA);
-
-  // 启动热点/连接网络
-  Load_WiFi();
+  
+  delay(600);
 
   addCallbackToMap();
-
-  Start_Websocket();
-  EEPROM.end();
-  logger.success("初始化完毕");
-  server_state.set_server_state(server_state.RUNNING);
+  logger.success("成功添加CallBack");
 
   logger.info("开始执行开机任务");
   {
@@ -368,6 +359,19 @@ void setup() {
     st["Save"] = false;
     executeCallback("TurnLight", st);
   }
+
+  // 设置ESP8266工作模式为AP模式
+  // WiFi.mode(WIFI);
+  WiFi.mode(WIFI_STA);
+
+  // 启动热点/连接网络
+  Load_WiFi();
+
+  Start_Websocket();
+  EEPROM.end();
+  logger.success("初始化完毕");
+  server_state.set_server_state(server_state.RUNNING);
+
 }
 
 void loop() {
