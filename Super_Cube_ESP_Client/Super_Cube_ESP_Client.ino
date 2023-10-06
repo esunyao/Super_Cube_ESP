@@ -27,6 +27,7 @@
 const String Default_Config = "{\"Logger\": {\"Debug\": false}, \"WiFi\": {\"softAP\": {\"ssid\": \"Super_Cube\", \"passwd\": \"FRS8571a8438a712517\", \"ip\": \"192.168.0.140\", \"gateway\": \"192.168.0.140\", \"subnet\": \"255.255.255.0\"}, \"Connect\": {\"ssid\": \"\", \"passwd\": \"\", \"config\": false}, \"ip\": \"192.168.0.140\", \"gateway\": \"192.168.0.1\", \"subnet\": \"255.255.255.0\"}, \"LED\": {}}";
 const byte INIT_FLAG = 1061109;
 const int blockSize = 150;
+String Serial_String = "";
 
 DynamicJsonDocument Config(2048);
 std::map<String, int> pinMap = {
@@ -346,7 +347,7 @@ void setup() {
 
   // 读取配置
   Load_Config();
-  
+
   delay(600);
 
   addCallbackToMap();
@@ -371,12 +372,22 @@ void setup() {
   EEPROM.end();
   logger.success("初始化完毕");
   server_state.set_server_state(server_state.RUNNING);
-
 }
 
 void loop() {
   wsClient.loop();
-  
+  // 检查是否有可用的串口数据
+  if (Serial.available() > 0) {
+    char receivedChar = Serial.read();  // 读取一个字符
+    Serial_String += receivedChar;
+    if (receivedChar == '\n') {
+      logger.success("成功接收到: " + Serial_String);
+      DynamicJsonDocument msg(2048);
+      deserializeJson(msg, String(Serial_String));
+      executeCallback(msg["command"], msg);
+      Serial_String = "";
+    }
+  }
 }
 
 
