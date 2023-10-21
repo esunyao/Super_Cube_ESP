@@ -13,14 +13,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="920d9362-381b-410a-b7e9-22e04802db47" name="更改" comment="fix some bug">
-      <change afterPath="$PROJECT_DIR$/serial_debug1.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/main.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/main.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/service/Websocket_Service.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/service/Websocket_Service.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/utils/flash_write.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/utils/flash_write.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Super_Cube_ESP_Server.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Super_Cube_ESP_Server.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/service/Websocket_Service.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/service/Websocket_Service.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -254,7 +248,7 @@
       <workItem from="1697796170748" duration="9363000" />
       <workItem from="1697857526937" duration="3538000" />
       <workItem from="1697861128098" duration="3138000" />
-      <workItem from="1697864315127" duration="21901000" />
+      <workItem from="1697864315127" duration="22842000" />
     </task>
     <task id="LOCAL-00001" summary="fix some bug">
       <option name="closed" value="true" />
