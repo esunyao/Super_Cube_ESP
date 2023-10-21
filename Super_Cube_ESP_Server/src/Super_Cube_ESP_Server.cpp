@@ -40,7 +40,6 @@ void Super_Cube_ESP_Server::load_config() {
 }
 
 void Super_Cube_ESP_Server::load_wifi() {
-    WiFi.mode(WIFI_STA);
     IPAddress staticIP;  // 设置静态IP地址
     IPAddress gateway;   // 设置网关
     IPAddress subnet;    // 设置子网掩码
@@ -48,6 +47,8 @@ void Super_Cube_ESP_Server::load_wifi() {
     if(Config["WiFi"]["SoftAP"]["IsOpen"]){
         WiFi.mode(WIFI_AP_STA);
         WiFi.softAP(String(Config["WiFi"]["SoftAP"]["ssid"]), String(Config["WiFi"]["SoftAP"]["passwd"]));
+    }else{
+        WiFi.mode(WIFI_STA);
     }
 
     WiFi.begin(String(Config["WiFi"]["Connect"]["ssid"]), String(Config["WiFi"]["Connect"]["passwd"]));
@@ -79,8 +80,8 @@ void Super_Cube_ESP_Server::load_wifi() {
         logger.success("IP:" + localIP.toString());
     }
     if(Config["WiFi"]["SoftAP"]["IsOpen"]){
-        IPAddress staticIP_(192,168,0,140);  // 设置静态IP地址
-        IPAddress gateway_(192, 168, 0, 140);   // 设置网关
+        IPAddress staticIP_(192,168,4,1);  // 设置静态IP地址
+        IPAddress gateway_(192, 168, 4, 1);   // 设置网关
         IPAddress subnet_(255, 255, 255, 0);    // 设置子网掩码
         WiFi.config(staticIP_, gateway_, subnet_);
         logger.info(WiFi.localIP().toString());
