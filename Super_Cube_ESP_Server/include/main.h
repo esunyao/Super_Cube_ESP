@@ -21,19 +21,22 @@
 
 #define WIFIConnectTimeOut 50
 
-const String Default_Config = "{\"Logger\": {\"Debug\": false}, \"WiFi\": {\"SoftAP\": {\"ssid\": \"Super_Cube\", \"passwd\": \"FRS8571a8438a712517\", \"IsOpen\": false}, \"Connect\": {\"ssid\": \"Super_Cube\", \"passwd\": \"FRS8571a8438a712517\", \"config\": false}, \"ip\": \"192.168.0.140\", \"gateway\": \"192.168.0.1\", \"subnet\": \"255.255.255.0\"}, \"LED\": {}}";
-const uint8_t INIT_FLAG = uint8_t (114514);
+const String Default_Config = "{\"Logger\": {\"Debug\": false, \"LogToWS\": false}, \"WiFi\": {\"SoftAP\": {\"ssid\": \"Super_Cube\", \"passwd\": \"FRS8571a8438a712517\", \"IsOpen\": false}, \"Connect\": {\"ssid\": \"Super_Cube\", \"passwd\": \"FRS8571a8438a712517\", \"config\": false}, \"Websocket\": {\"Server\": false, \"Client\": true, \"Init\": true}, \"ip\": \"192.168.0.140\", \"gateway\": \"192.168.0.1\", \"subnet\": \"255.255.255.0\"}, \"LED\": {}}";
+const uint8_t INIT_FLAG = uint8_t(114514);
 extern int blockSize;
 
 extern std::map<uint8_t, IPAddress> WebSocketsClientMapList;
 
 extern Logger logger;
 extern WebSocketsServer server;
+extern WebSocketsClient wsClient;
 extern std::map<String, int> pinMap;
 extern DynamicJsonDocument Config;
 extern flash_write FlashWrite;
 
 // 将callback添加到CallbackFunction中
 void addCallbackToMap();
-void executeCallback(uint8_t num, const char* name, JsonDocument& msg);
+
+void executeCallback(uint8_t num, const char *name, JsonDocument &msg);
+
 #endif //SUPER_CUBE_ESP_SERVER_MAIN_H

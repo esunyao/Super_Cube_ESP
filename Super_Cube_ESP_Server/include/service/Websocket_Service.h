@@ -8,7 +8,7 @@
 
 class Websocket_Service {
 public:
-    void Start_Websocket();
+    void Start_Websocket(bool val);
 };
 
 

@@ -75,12 +75,11 @@ void setup() {
         logger.warning("开始初始化");
         EEPROM.write(0, INIT_FLAG);
         EEPROM.commit();
+        EEPROM.end();
         FlashWrite.writeString(1, Default_Config);
         logger.success("已成功初始化系统");
         logger.info(FlashWrite.readString(1));
     }
-    EEPROM.commit();
-    EEPROM.end();
 
     addCallbackToMap();
     Super_Cube_Server._on_start();
@@ -92,7 +91,10 @@ void setup() {
 String Serial_String = "";
 
 void loop() {
-    server.loop();
+    if(Config["WiFi"]["Websocket"]["Server"])
+        server.loop();
+    if(Config["WiFi"]["Websocket"]["Client"])
+        wsClient.loop();
     if (Serial.available() > 0) {
         char receivedChar = Serial.read();  // 读取一个字符
         Serial_String += receivedChar;
@@ -132,6 +134,8 @@ public:
     static void Broadcast(uint8_t num, JsonDocument &msg);
 
     static void Send(uint8_t num, JsonDocument &msg);
+
+    static void WiFiOpen(uint8_t num, JsonDocument &msg);
 };
 
 CallBackFunctionClass CallBackFunctionClassN;
@@ -145,17 +149,29 @@ void addCallbackToMap() {
     addCallback("Get_All_Client", CallBackFunctionClassN.Get_All_Client);
     addCallback("Broadcast", CallBackFunctionClassN.Broadcast);
     addCallback("Send", CallBackFunctionClassN.Send);
+    addCallback("WiFiOpen", CallBackFunctionClassN.WiFiOpen);
+}
+
+void CallBackFunctionClass::WiFiOpen(uint8_t num, JsonDocument &msg) {
+    WiFi.mode(WIFI_AP_STA);
+    WiFi.softAP(String(Config["WiFi"]["SoftAP"]["ssid"]), String(Config["WiFi"]["SoftAP"]["passwd"]));
 }
 
 void CallBackFunctionClass::Broadcast(uint8_t num, JsonDocument &msg) {
     for (const auto &entry: WebSocketsClientMapList) {
         uint8_t key = entry.first;
-        server.sendTXT(key, msg["info"].as<const char *>());
+        if (num == -1)
+            server.sendTXT(key, msg["info"].as<const char *>());
+        else
+            wsClient.sendTXT(msg["info"].as<const char *>());
     }
 }
 
 void CallBackFunctionClass::Send(uint8_t num, JsonDocument &msg) {
-    server.sendTXT((uint8_t) msg["num"], msg["info"].as<const char *>());
+    if (num == -1)
+        server.sendTXT((uint8_t) msg["num"], msg["info"].as<const char *>());
+    else
+        wsClient.sendTXT(msg["info"].as<const char *>());
 }
 
 void CallBackFunctionClass::Get_All_Client(uint8_t num, JsonDocument &msg) {
@@ -173,18 +189,24 @@ void CallBackFunctionClass::Get_All_Client(uint8_t num, JsonDocument &msg) {
         String ress;
         serializeJson(res, ress);
         logger.debug(result);
+        if (num == -1)
         server.sendTXT(num, ress);
+        else
+            wsClient.sendTXT(ress);
     }
 }
 
 void CallBackFunctionClass::Get_Config(uint8_t num, JsonDocument &msg) {
     String result;
     serializeJson(Config, result);
-    if (num == (uint8_t)-1) {
+    if (num == (uint8_t) -1) {
         logger.info(result);
         return;
     }
+    if (num == -1)
     server.sendTXT(num, result);
+    else
+        wsClient.sendTXT(result);
 }
 
 void CallBackFunctionClass::Set_Config(uint8_t num, JsonDocument &msg) {

@@ -21,9 +21,9 @@ void Super_Cube_ESP_Server::_on_start() {
     load_wifi();
     Websocket_Service WebsocketService = Websocket_Service();
     if(Config["WiFi"]["Websocket"]["Server"])
-        WebsocketService.Start_Websocket();
+        WebsocketService.Start_Websocket(true);
     if(Config["WiFi"]["Websocket"]["Client"])
-        WebsocketService.Start_Websocket();
+        WebsocketService.Start_Websocket(false);
 }
 
 
@@ -48,6 +48,10 @@ void Super_Cube_ESP_Server::load_wifi() {
     if(Config["WiFi"]["SoftAP"]["IsOpen"]){
         WiFi.mode(WIFI_AP_STA);
         WiFi.softAP(String(Config["WiFi"]["SoftAP"]["ssid"]), String(Config["WiFi"]["SoftAP"]["passwd"]));
+        IPAddress staticIP_(192,168,0,140);  // 设置静态IP地址
+        IPAddress gateway_(192, 168, 0, 140);   // 设置网关
+        IPAddress subnet_(255, 255, 255, 0);    // 设置子网掩码
+        WiFi.config(staticIP_, gateway_, subnet_);
     }
 
     WiFi.begin(String(Config["WiFi"]["Connect"]["ssid"]), String(Config["WiFi"]["Connect"]["passwd"]));

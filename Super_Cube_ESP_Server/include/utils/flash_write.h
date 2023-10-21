@@ -35,12 +35,12 @@ public:
     String readString(int addr) {
         EEPROM.begin(8192);
         int numBlocks = EEPROM.read(addr);
+        EEPROM.end();
         String data = "";
         for (int i = 0; i < numBlocks; i++) {
             String block = readStringFromEEPROM(addr + i * blockSize + 1, blockSize);
             data += block;
         }
-        EEPROM.end();
         return data;
     }
 
@@ -52,14 +52,15 @@ public:
         int numBlocks = data.length() / blockSize + 1;
 
         EEPROM.write(addr, numBlocks);
+        EEPROM.end();
         // 逐个块地存储字符串
         for (int i = 0; i < numBlocks; i++) {
             String block = data.substring(i * blockSize, (i + 1) * blockSize);
             writeStringToEEPROM(addr + i * blockSize + 1, block);
         }
         logger.debug("已添加保存字符串 " + data);
-        EEPROM.commit();  // 写入EEPROM并保存更改
-        EEPROM.end();
+//        EEPROM.commit();  // 写入EEPROM并保存更改
+//        EEPROM.end();
     }
 };
 
