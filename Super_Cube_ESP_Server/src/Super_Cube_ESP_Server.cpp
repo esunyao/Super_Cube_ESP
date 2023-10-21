@@ -6,7 +6,7 @@
 
 extern Logger logger;
 extern WebSocketsServer server;
-extern std::map<uint8_t, IPAddress> WebSocketsClient;
+extern std::map<uint8_t, IPAddress> WebSocketsClientMapList;
 extern flash_write FlashWrite;
 
 void Super_Cube_ESP_Server::_on_start() {
@@ -20,7 +20,10 @@ void Super_Cube_ESP_Server::_on_start() {
     }
     load_wifi();
     Websocket_Service WebsocketService = Websocket_Service();
-    WebsocketService.Start_Websocket();
+    if(Config["WiFi"]["Websocket"]["Server"])
+        WebsocketService.Start_Websocket();
+    if(Config["WiFi"]["Websocket"]["Client"])
+        WebsocketService.Start_Websocket();
 }
 
 
@@ -37,11 +40,15 @@ void Super_Cube_ESP_Server::load_config() {
 }
 
 void Super_Cube_ESP_Server::load_wifi() {
-    WiFi.mode(WIFI_AP_STA);
-    WiFi.softAP("Super_Cube", "badou2008");
+    WiFi.mode(WIFI_STA);
     IPAddress staticIP;  // 设置静态IP地址
     IPAddress gateway;   // 设置网关
     IPAddress subnet;    // 设置子网掩码
+
+    if(Config["WiFi"]["SoftAP"]["IsOpen"]){
+        WiFi.mode(WIFI_AP_STA);
+        WiFi.softAP(String(Config["WiFi"]["SoftAP"]["ssid"]), String(Config["WiFi"]["SoftAP"]["passwd"]));
+    }
 
     WiFi.begin(String(Config["WiFi"]["Connect"]["ssid"]), String(Config["WiFi"]["Connect"]["passwd"]));
     for (int i = 0; i <= WIFIConnectTimeOut; i++) {
@@ -53,7 +60,11 @@ void Super_Cube_ESP_Server::load_wifi() {
     }
 
     if (WiFi.status() != WL_CONNECTED) {
-        logger.critical("WiFi连接失败或WiFi设置错误");
+        logger.critical("WiFi连接失败或WiFi设置错误，自动开启热点");
+        if(!Config["WiFi"]["SoftAP"]["IsOpen"]) {
+            WiFi.mode(WIFI_AP_STA);
+            WiFi.softAP(String(Config["WiFi"]["SoftAP"]["ssid"]), String(Config["WiFi"]["SoftAP"]["passwd"]));
+        }
     } else {
         logger.success("网络已连接");
         if (staticIP.fromString(String(Config["WiFi"]["ip"])) && gateway.fromString(String(Config["WiFi"]["gateway"])) && subnet.fromString(String(Config["WiFi"]["subnet"]))) {

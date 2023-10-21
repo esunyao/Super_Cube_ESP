@@ -18,13 +18,15 @@ std::map<String, int> pinMap = {
 
 DynamicJsonDocument Config(2048);
 
+WebSocketsClient wsClient;
 
 // 创建WebSocket服务器对象
 WebSocketsServer server(81);
 
+
 using CallbackFunction = std::function<void(uint8_t, JsonDocument &)>;
 
-std::map<uint8_t, IPAddress> WebSocketsClient;
+std::map<uint8_t, IPAddress> WebSocketsClientMapList;
 std::map<String, CallbackFunction> callbackMap;
 
 void addCallback(const String &name, CallbackFunction callback) {
@@ -146,7 +148,7 @@ void addCallbackToMap() {
 }
 
 void CallBackFunctionClass::Broadcast(uint8_t num, JsonDocument &msg) {
-    for (const auto &entry: WebSocketsClient) {
+    for (const auto &entry: WebSocketsClientMapList) {
         uint8_t key = entry.first;
         server.sendTXT(key, msg["info"].as<const char *>());
     }
@@ -161,7 +163,7 @@ void CallBackFunctionClass::Get_All_Client(uint8_t num, JsonDocument &msg) {
         String result = "";
         DynamicJsonDocument res(1024);
 
-        for (const auto &entry: WebSocketsClient) {
+        for (const auto &entry: WebSocketsClientMapList) {
             uint8_t key = entry.first;
             const IPAddress &ip = entry.second;
             res[int(key)] = ip;

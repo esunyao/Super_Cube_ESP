@@ -5,7 +5,7 @@
 #include "service/Websocket_Service.h"
 extern Logger logger;
 extern WebSocketsServer server;
-extern std::map<uint8_t, IPAddress> WebSocketsClient;
+extern std::map<uint8_t, IPAddress> WebSocketsClientMapList;
 extern void executeCallback(uint8_t num, const char* name, JsonDocument& msg);
 
 void Websocket_Service::Start_Websocket() {
@@ -20,11 +20,11 @@ void Websocket_Service::Start_Websocket() {
             if (type == WStype_CONNECTED) {
                 // 若为客户端连接事件，显示提示信息
                 logger.info("[" + String(num) + "] 连接到服务端");
-                WebSocketsClient[num] = server.remoteIP(num);
+                WebSocketsClientMapList[num] = server.remoteIP(num);
             } else if (type == WStype_DISCONNECTED) {
                 // 若为连接断开事件，显示提示信息
                 logger.info("[" + String(num) + "] 断开了连接");
-                WebSocketsClient.erase(num);
+                WebSocketsClientMapList.erase(num);
             } else if (type == WStype_TEXT) {
                 // 接收来自客户端的信息（客户端FLASH按键状态），并控制LED的工作
                 logger.debug("[" + String(num) + "] " + String((char*)payload));

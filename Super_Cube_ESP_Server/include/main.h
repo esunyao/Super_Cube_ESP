@@ -8,6 +8,7 @@
 #include <ESP8266WiFi.h>
 #include <iostream>
 #include <EEPROM.h>
+#include <WebSocketsClient.h>
 #include <Arduino.h>
 #include <WebSocketsServer.h>
 #include <ArduinoJson.h>
@@ -18,13 +19,13 @@
 #include "utils/flash_write.h"
 #include "service/Websocket_Service.h"
 
-#define WIFIConnectTimeOut 100
+#define WIFIConnectTimeOut 50
 
-const String Default_Config = "{\"Logger\": {\"Debug\": false}, \"WiFi\": {\"Connect\": {\"ssid\": \"\", \"passwd\": \"\", \"config\": false}, \"ip\": \"192.168.0.140\", \"gateway\": \"192.168.0.1\", \"subnet\": \"255.255.255.0\"}, \"LED\": {}}";
+const String Default_Config = "{\"Logger\": {\"Debug\": false}, \"WiFi\": {\"SoftAP\": {\"ssid\": \"Super_Cube\", \"passwd\": \"FRS8571a8438a712517\", \"IsOpen\": false}, \"Connect\": {\"ssid\": \"Super_Cube\", \"passwd\": \"FRS8571a8438a712517\", \"config\": false}, \"ip\": \"192.168.0.140\", \"gateway\": \"192.168.0.1\", \"subnet\": \"255.255.255.0\"}, \"LED\": {}}";
 const uint8_t INIT_FLAG = uint8_t (114514);
 extern int blockSize;
 
-extern std::map<uint8_t, IPAddress> WebSocketsClient;
+extern std::map<uint8_t, IPAddress> WebSocketsClientMapList;
 
 extern Logger logger;
 extern WebSocketsServer server;
