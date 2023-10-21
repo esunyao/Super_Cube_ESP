@@ -12,10 +12,13 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="920d9362-381b-410a-b7e9-22e04802db47" name="更改" comment="clion!">
+    <list default="true" id="920d9362-381b-410a-b7e9-22e04802db47" name="更改" comment="fix some bug">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/include/main.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/main.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/utils/flash_write.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/utils/flash_write.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Super_Cube_ESP_Server.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Super_Cube_ESP_Server.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/service/Websocket_Service.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/service/Websocket_Service.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -40,6 +43,20 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "esunyao"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings">
+    <option name="selectedUrlAndAccountId">
+      <UrlAndAccount>
+        <option name="accountId" value="82c14e85-5477-45b7-b753-f7ab79b91602" />
+        <option name="url" value="https://github.com/esunyao/Super_Cube_ESP.git" />
+      </UrlAndAccount>
+    </option>
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -123,7 +140,7 @@
       <recent name="C:\Users\Esuny\Desktop\Super_Cube_ESP\Super_Cube_ESP_Server\src" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.serial_debug">
+  <component name="RunManager" selected="PlatformIO.upload">
     <configuration default="true" type="BIBTEX_RUN_CONFIGURATION" factoryName="LaTeX configuration factory">
       <texify-bibtex>
         <compiler />
@@ -234,8 +251,17 @@
       <workItem from="1697796170748" duration="9363000" />
       <workItem from="1697857526937" duration="3538000" />
       <workItem from="1697861128098" duration="3138000" />
-      <workItem from="1697864315127" duration="9843000" />
+      <workItem from="1697864315127" duration="15230000" />
     </task>
+    <task id="LOCAL-00001" summary="fix some bug">
+      <option name="closed" value="true" />
+      <created>1697888310199</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1697888310199</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -243,7 +269,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="clion!" />
-    <option name="LAST_COMMIT_MESSAGE" value="clion!" />
+    <MESSAGE value="fix some bug" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix some bug" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -252,6 +279,21 @@
           <url>file://$APPLICATION_CONFIG_DIR$/scratches/scratch.cpp</url>
           <line>10</line>
           <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/main.cpp</url>
+          <line>37</line>
+          <option name="timeStamp" value="13" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/main.cpp</url>
+          <line>38</line>
+          <option name="timeStamp" value="14" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/main.cpp</url>
+          <line>39</line>
+          <option name="timeStamp" value="15" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

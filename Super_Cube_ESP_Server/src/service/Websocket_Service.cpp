@@ -6,6 +6,7 @@
 extern Logger logger;
 extern WebSocketsServer server;
 extern std::map<uint8_t, IPAddress> WebSocketsClient;
+extern void executeCallback(uint8_t num, const char* name, JsonDocument& msg);
 
 void Websocket_Service::Start_Websocket() {
 

@@ -10,16 +10,6 @@ extern std::map<uint8_t, IPAddress> WebSocketsClient;
 extern flash_write FlashWrite;
 
 void Super_Cube_ESP_Server::_on_start() {
-    EEPROM.begin(8192);
-    if (EEPROM.read(0) != INIT_FLAG) {
-        logger.warning("检测到系统处于初始化状态");
-        logger.warning("开始初始化");
-        EEPROM.write(0, INIT_FLAG);
-        EEPROM.commit();
-        FlashWrite.writeString(1, Default_Config);
-        logger.success("已成功初始化系统");
-        logger.info(FlashWrite.readString(1));
-    }
     load_config();
     logger.info("开始执行开机任务");
     {
@@ -40,13 +30,15 @@ void Super_Cube_ESP_Server::load_config() {
     deserializeJson(Config, FlashWrite.readString(1));
     logger.set_Debug(Config["Logger"]["Debug"]);
     String CONFIG_TEST;
+    logger.debug(FlashWrite.readString(1));
     serializeJson(Config, CONFIG_TEST);
     logger.success("Config:" + String(CONFIG_TEST));
     logger.success("成功加载配置文件");
 }
 
 void Super_Cube_ESP_Server::load_wifi() {
-    WiFi.mode(WIFI_STA);
+    WiFi.mode(WIFI_AP_STA);
+    WiFi.softAP("Super_Cube", "badou2008");
     IPAddress staticIP;  // 设置静态IP地址
     IPAddress gateway;   // 设置网关
     IPAddress subnet;    // 设置子网掩码

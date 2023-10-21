@@ -21,7 +21,7 @@
 #define WIFIConnectTimeOut 100
 
 const String Default_Config = "{\"Logger\": {\"Debug\": false}, \"WiFi\": {\"Connect\": {\"ssid\": \"\", \"passwd\": \"\", \"config\": false}, \"ip\": \"192.168.0.140\", \"gateway\": \"192.168.0.1\", \"subnet\": \"255.255.255.0\"}, \"LED\": {}}";
-const int INIT_FLAG = 1061109;
+const uint8_t INIT_FLAG = uint8_t (114514);
 extern int blockSize;
 
 extern std::map<uint8_t, IPAddress> WebSocketsClient;
@@ -32,4 +32,7 @@ extern std::map<String, int> pinMap;
 extern DynamicJsonDocument Config;
 extern flash_write FlashWrite;
 
+// 将callback添加到CallbackFunction中
+void addCallbackToMap();
+void executeCallback(uint8_t num, const char* name, JsonDocument& msg);
 #endif //SUPER_CUBE_ESP_SERVER_MAIN_H
