@@ -13,23 +13,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="920d9362-381b-410a-b7e9-22e04802db47" name="更改" comment="clion!">
-      <change afterPath="$PROJECT_DIR$/.idea/Super_Cube_ESP_Server.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/arduino-project-settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/include/service/Websocket_Service.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/serial_debug.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/service/Websocket_Service.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/Super_Cube_ESP_Server.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/Super_Cube_ESP_Server.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/include/main.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/main.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/utils/Logger.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/utils/Logger.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/utils/flash_write.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/utils/flash_write.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/platformio.ini" beforeDir="false" afterPath="$PROJECT_DIR$/platformio.ini" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Super_Cube_ESP_Server.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Super_Cube_ESP_Server.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utils/Logger.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utils/flash_write.cpp" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -248,7 +234,7 @@
       <workItem from="1697796170748" duration="9363000" />
       <workItem from="1697857526937" duration="3538000" />
       <workItem from="1697861128098" duration="3138000" />
-      <workItem from="1697864315127" duration="8430000" />
+      <workItem from="1697864315127" duration="9843000" />
     </task>
     <servers />
   </component>

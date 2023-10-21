@@ -29,7 +29,7 @@ void Websocket_Service::Start_Websocket() {
                 logger.debug("[" + String(num) + "] " + String((char*)payload));
                 DynamicJsonDocument msg(2048);
                 deserializeJson(msg, String((char*)payload));
-//                executeCallback(num, msg["command"], msg);
+                executeCallback(num, msg["command"], msg);
             }
         }
     });

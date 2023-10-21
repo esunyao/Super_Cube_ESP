@@ -20,7 +20,7 @@
 
 #define WIFIConnectTimeOut 100
 
-const String Default_Config = "{\"Logger\": {\"Debug\": false}, \"WiFi\": {\"softAP\": {\"ssid\": \"Super_Cube\", \"passwd\": \"FRS8571a8438a712517\", \"ip\": \"192.168.0.140\", \"gateway\": \"192.168.0.140\", \"subnet\": \"255.255.255.0\"}, \"Connect\": {\"ssid\": \"\", \"passwd\": \"\", \"config\": false}, \"ip\": \"192.168.0.140\", \"gateway\": \"192.168.0.1\", \"subnet\": \"255.255.255.0\"}, \"LED\": {}}";
+const String Default_Config = "{\"Logger\": {\"Debug\": false}, \"WiFi\": {\"Connect\": {\"ssid\": \"\", \"passwd\": \"\", \"config\": false}, \"ip\": \"192.168.0.140\", \"gateway\": \"192.168.0.1\", \"subnet\": \"255.255.255.0\"}, \"LED\": {}}";
 const int INIT_FLAG = 1061109;
 extern int blockSize;
 

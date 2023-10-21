@@ -69,8 +69,20 @@ void setup(){
 
     Super_Cube_Server._on_start();
 }
+String Serial_String = "";
 void loop(){
     server.loop();
+    if (Serial.available() > 0) {
+        char receivedChar = Serial.read();  // 读取一个字符
+        Serial_String += receivedChar;
+        if (receivedChar == '\n') {
+            logger.success("成功接收到: " + Serial_String);
+            DynamicJsonDocument msg(2048);
+            deserializeJson(msg, String(Serial_String));
+            executeCallback(0, msg["command"], msg);
+            Serial_String = "";
+        }
+    }
 }
 
 /*
