@@ -13,17 +13,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="920d9362-381b-410a-b7e9-22e04802db47" name="更改" comment="clion!">
-      <change afterPath="$PROJECT_DIR$/include/main.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Super_Cube_ESP_Server.ino" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/README" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/README" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/platformio.ini" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/README" beforeDir="false" />
+      <change afterPath="$PROJECT_DIR$/include/Super_Cube_ESP_Server.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/include/utils/Logger.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/include/utils/flash_write.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/Super_Cube_ESP_Server.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/utils/Logger.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/utils/flash_write.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/main.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/main.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/platformio.ini" beforeDir="false" afterPath="$PROJECT_DIR$/platformio.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -40,6 +39,9 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
   </component>
   <component name="PlatformioLocalSettings">
     <option name="availableProjects">
@@ -88,6 +90,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.cidr.known.project.marker": "true",
     "WebServerToolWindowFactoryState": "false",
+    "cf.advertisement.text.has.clang-format": "true",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
     "git-widget-placeholder": "master",
@@ -105,6 +108,11 @@
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\Esuny\Desktop\Super_Cube_ESP\Super_Cube_ESP_Server\src" />
     </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Esuny\Desktop\Super_Cube_ESP\Super_Cube_ESP_Server\include\utils" />
+      <recent name="C:\Users\Esuny\Desktop\Super_Cube_ESP\Super_Cube_ESP_Server\include" />
+      <recent name="C:\Users\Esuny\Desktop\Super_Cube_ESP\Super_Cube_ESP_Server\src" />
+    </key>
   </component>
   <component name="RunManager">
     <configuration default="true" type="BIBTEX_RUN_CONFIGURATION" factoryName="LaTeX configuration factory">
@@ -118,9 +126,9 @@
       </texify-bibtex>
       <method v="2" />
     </configuration>
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
       </method>
     </configuration>
     <configuration default="true" type="EXTERNAL_TOOL_RUN_CONFIGURATION" factoryName="LaTeX configuration factory">
@@ -172,6 +180,7 @@
       <updated>1697734682514</updated>
       <workItem from="1697734684878" duration="700000" />
       <workItem from="1697796170748" duration="9363000" />
+      <workItem from="1697857526937" duration="3538000" />
     </task>
     <servers />
   </component>

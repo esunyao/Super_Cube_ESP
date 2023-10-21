@@ -1,0 +1,14 @@
+//
+// Created by Esuny on 2023/10/21.
+//
+
+#ifndef SUPER_CUBE_ESP_SERVER_SUPER_CUBE_ESP_SERVER_H
+#define SUPER_CUBE_ESP_SERVER_SUPER_CUBE_ESP_SERVER_H
+
+
+class Super_Cube_ESP_Server {
+
+};
+
+
+#endif //SUPER_CUBE_ESP_SERVER_SUPER_CUBE_ESP_SERVER_H
