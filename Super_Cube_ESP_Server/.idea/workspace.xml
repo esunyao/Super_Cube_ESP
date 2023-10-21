@@ -13,16 +13,23 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="920d9362-381b-410a-b7e9-22e04802db47" name="更改" comment="clion!">
-      <change afterPath="$PROJECT_DIR$/include/Super_Cube_ESP_Server.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/include/utils/Logger.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/include/utils/flash_write.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Super_Cube_ESP_Server.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/utils/Logger.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/utils/flash_write.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/Super_Cube_ESP_Server.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/arduino-project-settings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/include/service/Websocket_Service.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/serial_debug.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/service/Websocket_Service.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/Super_Cube_ESP_Server.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/Super_Cube_ESP_Server.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/include/main.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/main.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/utils/Logger.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/utils/Logger.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/utils/flash_write.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/utils/flash_write.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/platformio.ini" beforeDir="false" afterPath="$PROJECT_DIR$/platformio.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Super_Cube_ESP_Server.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Super_Cube_ESP_Server.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/Logger.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/flash_write.cpp" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -32,10 +39,18 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="nodemcuv2" />
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$">
       <ProjectState />
     </projectState>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
@@ -89,19 +104,26 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.cidr.known.project.marker": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "WebServerToolWindowFactoryState": "false",
     "cf.advertisement.text.has.clang-format": "true",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
     "git-widget-placeholder": "master",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/Users/Esuny/Desktop/Super_Cube_ESP/Super_Cube_ESP_Server/src",
+    "last_opened_file_path": "C:/Users/Esuny/Desktop/Super_Cube_ESP/Super_Cube_ESP_Server/serial_debug.py",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
-    "settings.editor.selected.configurable": "CMakeSettings",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "terminal",
     "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "com.intellij.ide.scratch.ScratchImplUtil$2/新建临时文件": [
+      "ObjectiveC"
+    ]
   }
 }]]></component>
   <component name="RecentsManager">
@@ -109,12 +131,13 @@
       <recent name="C:\Users\Esuny\Desktop\Super_Cube_ESP\Super_Cube_ESP_Server\src" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Esuny\Desktop\Super_Cube_ESP\Super_Cube_ESP_Server\include\service" />
       <recent name="C:\Users\Esuny\Desktop\Super_Cube_ESP\Super_Cube_ESP_Server\include\utils" />
       <recent name="C:\Users\Esuny\Desktop\Super_Cube_ESP\Super_Cube_ESP_Server\include" />
       <recent name="C:\Users\Esuny\Desktop\Super_Cube_ESP\Super_Cube_ESP_Server\src" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python.serial_debug">
     <configuration default="true" type="BIBTEX_RUN_CONFIGURATION" factoryName="LaTeX configuration factory">
       <texify-bibtex>
         <compiler />
@@ -129,6 +152,12 @@
     <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
         <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="scratch.cpp" type="CppFileRunConfiguration" factoryName="CppFileRunConfiguration" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Super_Cube_ESP_Server" TARGET_NAME="scratch.cpp" CONFIG_NAME="scratch.cpp">
+      <option name="sourceFile" value="C:\Users\Esuny\AppData\Roaming\JetBrains\CLion2023.2\scratches\scratch.cpp" />
+      <method v="2">
+        <option name="com.jetbrains.cidr.cpp.runfile.CppFileBuildBeforeRunTaskProvider$BasicBuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration default="true" type="EXTERNAL_TOOL_RUN_CONFIGURATION" factoryName="LaTeX configuration factory">
@@ -169,6 +198,43 @@
       </texify-makeindex>
       <method v="2" />
     </configuration>
+    <configuration name="serial_debug" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="Super_Cube_ESP_Server" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.9 (venv)" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/serial_debug.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="true" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="upload" type="platformio" factoryName="PlatformIO Debug" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Super_Cube_ESP_Server" TARGET_NAME="PlatformIO" CONFIG_NAME="PlatformIO">
+      <method v="2">
+        <option name="PlatformioUploadBeforeRun" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="C/C++ 文件.scratch.cpp" />
+      <item itemvalue="PlatformIO.upload" />
+      <item itemvalue="Python.serial_debug" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="C/C++ 文件.scratch.cpp" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="应用程序级" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -181,6 +247,8 @@
       <workItem from="1697734684878" duration="700000" />
       <workItem from="1697796170748" duration="9363000" />
       <workItem from="1697857526937" duration="3538000" />
+      <workItem from="1697861128098" duration="3138000" />
+      <workItem from="1697864315127" duration="8430000" />
     </task>
     <servers />
   </component>
@@ -190,6 +258,17 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="clion!" />
     <option name="LAST_COMMIT_MESSAGE" value="clion!" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$APPLICATION_CONFIG_DIR$/scratches/scratch.cpp</url>
+          <line>10</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
