@@ -13,10 +13,10 @@ void Super_Cube_ESP_Server::_on_start() {
     load_config();
     logger.info("开始执行开机任务");
     {
-        DynamicJsonDocument st(2048);
+        DynamicJsonDocument st(4096);
         st["step"] = Config["LED"];
         st["Save"] = false;
-//        executeCallback(0, "TurnLight", st);
+        executeCallback(0, "TurnLight", st);
     }
     load_wifi();
     Websocket_Service WebsocketService = Websocket_Service();
@@ -69,11 +69,13 @@ void Super_Cube_ESP_Server::load_wifi() {
         }
     } else {
         logger.success("网络已连接");
-        if (staticIP.fromString(String(Config["WiFi"]["ip"])) && gateway.fromString(String(Config["WiFi"]["gateway"])) && subnet.fromString(String(Config["WiFi"]["subnet"]))) {
+        if (Config["WiFi"]["Connect"]["config"] && staticIP.fromString(String(Config["WiFi"]["ip"])) && gateway.fromString(String(Config["WiFi"]["gateway"])) && subnet.fromString(String(Config["WiFi"]["subnet"]))) {
             WiFi.config(staticIP, gateway, subnet);
             // WiFi.softAPConfig(staticIP, gateway, subnet);
             logger.success("已设置网络的静态IP地址、网关和子网掩码");
-        } else {
+        } else if(!Config["WiFi"]["Connect"]["config"]){
+            logger.warning("IP设定已禁用！");
+        } else{
             logger.critical("IP地址格式错误");
         }
         IPAddress localIP = WiFi.localIP();

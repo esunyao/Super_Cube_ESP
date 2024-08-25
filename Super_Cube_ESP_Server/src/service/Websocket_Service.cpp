@@ -33,7 +33,7 @@ void Websocket_Service::Start_Websocket(bool val) {
                     // 接收来自客户端的信息（客户端FLASH按键状态），并控制LED的工作
                     if (String((char *) payload) != "Client") {
                         logger.debug("[" + String(num) + "] " + String((char *) payload));
-                        DynamicJsonDocument msg(2048);
+                        DynamicJsonDocument msg(8192);
                         deserializeJson(msg, String((char *) payload));
                         executeCallback(num, msg["command"], msg);
                     } else if (String((char *) payload) == "Client" && Config["WiFi"]["Websocket"]["Init"]) {
@@ -49,7 +49,7 @@ void Websocket_Service::Start_Websocket(bool val) {
             }
         });
     } else {
-        wsClient.begin("192.168.0.140", 81);
+        wsClient.begin("192.168.0.150", 81);
         wsClient.onEvent([](WStype_t type, uint8_t *payload, size_t length) {
             {
                 if (type == WStype_CONNECTED) {
@@ -61,7 +61,7 @@ void Websocket_Service::Start_Websocket(bool val) {
                     logger.info("断开了连接");
                 } else if (type == WStype_TEXT) {
                     logger.debug("[ 接收到服务端数据 ] " + String((char *) payload));
-                    DynamicJsonDocument msg(2048);
+                    DynamicJsonDocument msg(8192);
                     deserializeJson(msg, String((char *) payload));
                     executeCallback(-1, msg["command"], msg);
                 }

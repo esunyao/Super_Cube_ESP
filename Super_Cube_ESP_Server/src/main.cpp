@@ -91,21 +91,21 @@ void setup() {
 String Serial_String = "";
 
 void loop() {
-    if(Config["WiFi"]["Websocket"]["Server"])
+    if (Config["WiFi"]["Websocket"]["Server"])
         server.loop();
-    if(Config["WiFi"]["Websocket"]["Client"])
+    if (Config["WiFi"]["Websocket"]["Client"])
         wsClient.loop();
     if (Serial.available() > 0) {
         char receivedChar = Serial.read();  // 读取一个字符
         Serial_String += receivedChar;
         if (receivedChar == '\n') {
             logger.success("成功接收到: " + Serial_String);
-            DynamicJsonDocument msg(2048);
+            DynamicJsonDocument msg(8192);
             deserializeJson(msg, String(Serial_String));
             String ReDeJsonDocument;
             serializeJson(msg, ReDeJsonDocument);
             logger.success("解析为: " + ReDeJsonDocument);
-            executeCallback(-1, msg["command"], msg);
+            executeCallback(-2, msg["command"], msg);
             Serial_String = "";
         }
     }
@@ -160,7 +160,7 @@ void CallBackFunctionClass::WiFiOpen(uint8_t num, JsonDocument &msg) {
 void CallBackFunctionClass::Broadcast(uint8_t num, JsonDocument &msg) {
     for (const auto &entry: WebSocketsClientMapList) {
         uint8_t key = entry.first;
-        if (num == -1)
+        if (num != -1)
             server.sendTXT(key, msg["info"].as<const char *>());
         else
             wsClient.sendTXT(msg["info"].as<const char *>());
@@ -168,7 +168,7 @@ void CallBackFunctionClass::Broadcast(uint8_t num, JsonDocument &msg) {
 }
 
 void CallBackFunctionClass::Send(uint8_t num, JsonDocument &msg) {
-    if (num == -1)
+    if (num != -1)
         server.sendTXT((uint8_t) msg["num"], msg["info"].as<const char *>());
     else
         wsClient.sendTXT(msg["info"].as<const char *>());
@@ -189,8 +189,8 @@ void CallBackFunctionClass::Get_All_Client(uint8_t num, JsonDocument &msg) {
         String ress;
         serializeJson(res, ress);
         logger.debug(result);
-        if (num == -1)
-        server.sendTXT(num, ress);
+        if (num != -1)
+            server.sendTXT(num, ress);
         else
             wsClient.sendTXT(ress);
     }
@@ -199,14 +199,15 @@ void CallBackFunctionClass::Get_All_Client(uint8_t num, JsonDocument &msg) {
 void CallBackFunctionClass::Get_Config(uint8_t num, JsonDocument &msg) {
     String result;
     serializeJson(Config, result);
-    if (num == (uint8_t) -1) {
+    if (num == (uint8_t) -2) {
         logger.info(result);
         return;
     }
-    if (num == -1)
-    server.sendTXT(num, result);
-    else
+    if (num != (uint8_t) -1) {
+        server.sendTXT(num, result);
+    } else {
         wsClient.sendTXT(result);
+    }
 }
 
 void CallBackFunctionClass::Set_Config(uint8_t num, JsonDocument &msg) {
