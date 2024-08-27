@@ -10,9 +10,9 @@
 #include <WString.h>
 #include <main_.h>
 
-super_cube::super_cube(HardwareSerial &serial) : serial(serial) {
-    serial.println("SuperCube::SuperCube()");
-
+super_cube::super_cube(HardwareSerial &serial) : serial(serial), EEPROM_Manger(),
+                                                 command_registry(new CommandRegistry(*this)),
+                                                 serialHandler(new SerialHandler(serial, *this)) {
 }
 
 super_cube::~super_cube() {
@@ -21,22 +21,25 @@ super_cube::~super_cube() {
 
 void super_cube::setup() {
 //    EEPROM_Manger.initialize();
+    serialHandler->start();
     _connectWiFi(_ssid, _password);
-    command_registry.add_command(Command(
-            flash_string_vector{std::string(String(F("digitalRead")).c_str())}, // Convert F() result to std::string
-            flash_string_vector{std::string(String(F("digitalRead")).c_str())}, // Convert F() result to std::string
-            [](Shell &shell, const std::vector<std::string> &arguments) {
-                uint8_t pin = String(arguments[0].c_str()).toInt();
-                auto value = digitalRead(pin);
-                shell.println("asdfasdfasdf");
+    command_registry->add_command(Command(
+            flash_string_vector{"digitalRead"}, // Convert F() result to std::string
+            flash_string_vector{"<pin>"}, // Convert F() result to std::string
+            [](Shell *shell, const std::vector<std::string> &arguments) {
+                shell->println(arguments[0].c_str());
+                shell->println("啊拒绝哦i解耦i飞机破i");
             }
     ));
 }
 
-void super_cube::loop(){
+void super_cube::loop() {
+//    serial.println(reinterpret_cast<uintptr_t>(this), HEX);
+    serialHandler->handleSerial();
+}
+void super_cube::_command_register() {
 
 }
-
 void super_cube::_connectWiFi(const char *ssid, const char *password) {
     WiFi.begin(ssid, password);
     serial.print("Connecting to WiFi");

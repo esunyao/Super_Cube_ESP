@@ -4,9 +4,13 @@
 
 #ifndef SUPER_CUBE_ESP_MAIN__H
 #define SUPER_CUBE_ESP_MAIN__H
+
+#include "Adafruit_NeoPixel.h"
+
 extern const char *_ssid;
 extern const char *_password;
 const int baud = 115200;
+
 
 
 /* EEPROM */

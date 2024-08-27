@@ -6,17 +6,24 @@
 #define SERIAL_HANDLER_H
 
 #include <Arduino.h>
+#include "super_cube.h"
+
+class super_cube;
 
 class SerialHandler {
 public:
-    SerialHandler(HardwareSerial &serial, unsigned long baudRate);
-    void begin();
+
+    SerialHandler(HardwareSerial &serial, super_cube &cube);
+
+    void start();
+
     void handleSerial();
+
     void sendResponse(const String &response);
 
 private:
+    super_cube &cube;
     HardwareSerial &serial;
-    unsigned long baudRate;
 };
 
 #endif // SERIAL_HANDLER_H

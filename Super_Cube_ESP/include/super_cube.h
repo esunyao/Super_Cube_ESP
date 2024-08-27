@@ -4,24 +4,37 @@
 
 #ifndef SUPER_CUBE_ESP_SUEPR_CUBE_H
 #define SUPER_CUBE_ESP_SUEPR_CUBE_H
+
 #include <HardwareSerial.h>
 #include "EEPROM.h"
 #include "utils/EEPROM_Utils.h"
 #include "command/CommandManager.h"
+#include "handler/console_handler.h"
+
+class SerialHandler;
+
+class CommandRegistry;
+
+class Shell;
 
 class super_cube {
 public:
     super_cube(HardwareSerial &serial);
+
     ~super_cube();
 
     void setup();
+
     void loop();
+
+    CommandRegistry *command_registry;
+    HardwareSerial &serial;
 protected:
     void _connectWiFi(const char *ssid, const char *password);
+    void _command_register();
 private:
-    HardwareSerial &serial;
     EEPROMManager EEPROM_Manger;
-    CommandRegistry command_registry;
+    SerialHandler *serialHandler;
 };
 
 #endif //SUPER_CUBE_ESP_SUEPR_CUBE_H

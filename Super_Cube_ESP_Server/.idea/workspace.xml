@@ -15,15 +15,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="920d9362-381b-410a-b7e9-22e04802db47" name="更改" comment="commit">
-      <change afterPath="$PROJECT_DIR$/../Super_Cube_ESP/include/main_.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../Super_Cube_ESP/include/super_cube.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../Super_Cube_ESP/include/utils/EEPROM_Utils.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../Super_Cube_ESP/include/utils/uuid_utils.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../Super_Cube_ESP/src/super_cube.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../Super_Cube_ESP/src/utils/EEPROM_Utils.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../Super_Cube_ESP/src/utils/uuid_utils.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Super_Cube_ESP/include/command/CommandManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/../Super_Cube_ESP/include/command/CommandManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Super_Cube_ESP/include/handler/console_handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/../Super_Cube_ESP/include/handler/console_handler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Super_Cube_ESP/include/super_cube.h" beforeDir="false" afterPath="$PROJECT_DIR$/../Super_Cube_ESP/include/super_cube.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../Super_Cube_ESP/platformio.ini" beforeDir="false" afterPath="$PROJECT_DIR$/../Super_Cube_ESP/platformio.ini" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Super_Cube_ESP/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../Super_Cube_ESP/src/main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Super_Cube_ESP/src/command/CommandManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../Super_Cube_ESP/src/command/CommandManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Super_Cube_ESP/src/handler/console_handler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../Super_Cube_ESP/src/handler/console_handler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Super_Cube_ESP/src/super_cube.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../Super_Cube_ESP/src/super_cube.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -64,9 +62,6 @@
 }</component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
-  </component>
-  <component name="PerforceDirect.Settings">
-    <option name="CHARSET" value="无" />
   </component>
   <component name="PlatformioLocalSettings">
     <option name="availableProjects">
@@ -261,9 +256,9 @@
       </texify-bibtex>
       <method v="2" />
     </configuration>
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
       </method>
     </configuration>
     <configuration name="scratch.cpp" type="CppFileRunConfiguration" factoryName="CppFileRunConfiguration" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Super_Cube_ESP_Server" TARGET_NAME="scratch.cpp" CONFIG_NAME="scratch.cpp">
@@ -435,6 +430,7 @@
       <workItem from="1724649712690" duration="1510000" />
       <workItem from="1724666434866" duration="5950000" />
       <workItem from="1724742897365" duration="597000" />
+      <workItem from="1724763000670" duration="1972000" />
     </task>
     <task id="LOCAL-00001" summary="fix some bug">
       <option name="closed" value="true" />
