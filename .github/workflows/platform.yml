@@ -17,13 +17,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.9'
+          
       - name: Install PlatformIO Core
         run: pip install --upgrade platformio
-      - name: Turn to the project
-        run: cd Super_Cube_ESP
-      - name: tree
-        run: tree
+        
       - name: Load Project
         run: pio project config --json-output
+        working-directory: ./Super_Cube_ESP
+        
       - name: Build PlatformIO Project
         run: pio run -e nodemcuv2
+        working-directory: ./Super_Cube_ESP
