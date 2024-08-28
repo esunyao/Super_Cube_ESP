@@ -11,7 +11,6 @@ const char *_ssid = "您的WiFi名称";
 const char *_password = "您的WiFi密码";
 // WiFi设置
 std::unique_ptr<super_cube> cube;
-
 void setup() {
     Serial.begin(baud);
     cube = std::make_unique<super_cube>(Serial);

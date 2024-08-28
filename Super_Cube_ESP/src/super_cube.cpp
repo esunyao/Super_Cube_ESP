@@ -13,6 +13,7 @@
 super_cube::super_cube(HardwareSerial &serial) : serial(serial), EEPROM_Manger(),
                                                  command_registry(new CommandRegistry(*this)),
                                                  serialHandler(new SerialHandler(serial, *this)) {
+    strip = nullptr;
 }
 
 super_cube::~super_cube() {
@@ -29,6 +30,13 @@ void super_cube::setup() {
             [](Shell *shell, const std::vector<std::string> &arguments) {
                 shell->println(arguments[0].c_str());
                 shell->println("啊拒绝哦i解耦i飞机破i");
+            }
+    ));
+    command_registry->add_command(Command(
+            flash_string_vector{"digitalRead"}, // Convert F() result to std::string
+            flash_string_vector{"<pin>"}, // Convert F() result to std::string
+            [](Shell *shell, const std::vector<std::string> &arguments) {
+
             }
     ));
 }

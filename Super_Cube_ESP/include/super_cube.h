@@ -10,6 +10,7 @@
 #include "utils/EEPROM_Utils.h"
 #include "command/CommandManager.h"
 #include "handler/console_handler.h"
+#include <Adafruit_NeoPixel.h>
 
 class SerialHandler;
 
@@ -29,6 +30,7 @@ public:
 
     CommandRegistry *command_registry;
     HardwareSerial &serial;
+    Adafruit_NeoPixel *strip;
 protected:
     void _connectWiFi(const char *ssid, const char *password);
     void _command_register();
