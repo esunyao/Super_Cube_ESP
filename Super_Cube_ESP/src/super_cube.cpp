@@ -9,10 +9,12 @@
 #include <string>
 #include <WString.h>
 #include <main_.h>
+#include <HardwareSerial.h>
 
-super_cube::super_cube(HardwareSerial &serial) : serial(serial), EEPROM_Manger(),
-                                                 command_registry(new CommandRegistry(*this)),
-                                                 serialHandler(new SerialHandler(serial, *this)) {
+super_cube::super_cube(HardwareSerial *serial) : EEPROM_Manger(),
+                                                  command_registry(new CommandRegistry(*this)),
+                                                  serial(serial),
+                                                  serialHandler(new SerialHandler(*this, serial)) {
     strip = nullptr;
 }
 
@@ -33,7 +35,7 @@ void super_cube::setup() {
             }
     ));
     command_registry->add_command(Command(
-            flash_string_vector{"digitalRead"}, // Convert F() result to std::string
+            flash_string_vector{"digitalRead1"}, // Convert F() result to std::string
             flash_string_vector{"<pin>"}, // Convert F() result to std::string
             [](Shell *shell, const std::vector<std::string> &arguments) {
 
@@ -42,36 +44,38 @@ void super_cube::setup() {
 }
 
 void super_cube::loop() {
-//    serial.println(reinterpret_cast<uintptr_t>(this), HEX);
+//    Serial.println(reinterpret_cast<uintptr_t>(this), HEX);
     serialHandler->handleSerial();
 }
+
 void super_cube::_command_register() {
 
 }
+
 void super_cube::_connectWiFi(const char *ssid, const char *password) {
     WiFi.begin(ssid, password);
-    serial.print("Connecting to WiFi");
+    Serial.print("Connecting to WiFi");
 
     int attempts = 0;
     const int maxAttempts = 20; // Maximum number of attempts to connect to WiFi
 
     while (WiFi.status() != WL_CONNECTED && attempts < maxAttempts) {
         delay(500);
-        serial.print(".");
+        Serial.print(".");
         attempts++;
     }
 
     if (WiFi.status() == WL_CONNECTED) {
-        serial.println("\nWiFi connected");
-        serial.print("IP address: ");
-        serial.println(WiFi.localIP());
+        Serial.println("\nWiFi connected");
+        Serial.print("IP address: ");
+        Serial.println(WiFi.localIP());
     } else {
-        serial.println("\nFailed to connect to WiFi. Starting AP mode...");
+        Serial.println("\nFailed to connect to WiFi. Starting AP mode...");
 
         // Start Access Point mode
         String uuid = generateUUIDv4();
         WiFi.softAP("SuperCube_" + uuid.substring(uuid.length() - 5), "password123");
-        serial.print("AP IP address: ");
-        serial.println(WiFi.softAPIP());
+        Serial.print("AP IP address: ");
+        Serial.println(WiFi.softAPIP());
     }
 }

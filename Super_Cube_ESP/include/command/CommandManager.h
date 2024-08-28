@@ -18,12 +18,13 @@ class super_cube;
 // Declare the Shell class
 class Shell {
 public:
-    Shell(HardwareSerial &serial);
+    Shell(super_cube &superCube, HardwareSerial *serial);
 
     void println(const char *message);
 
 private:
-    HardwareSerial &serial;
+    super_cube &superCube;
+    HardwareSerial *serial;
 };
 
 // Define flash_string_vector as a vector of strings

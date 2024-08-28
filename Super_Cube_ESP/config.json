@@ -1,6 +1,20 @@
 {
+  "ID": "",
   "Internet": {
     "ssid": "SSID",
     "passwd": "asdfqwer"
-  }
+  },
+  "http": {
+    "ip": "",
+    "port": 80
+  },
+  "Websocket": {
+    "ip": "",
+    "port": 80
+  },
+  "Webhook":{
+    "ip": "",
+    "port": 80
+  },
+  "serverMode": "http"
 }

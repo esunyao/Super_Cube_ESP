@@ -13,7 +13,7 @@ class super_cube;
 class SerialHandler {
 public:
 
-    SerialHandler(HardwareSerial &serial, super_cube &cube);
+    SerialHandler(super_cube &cube, HardwareSerial *serial);
 
     void start();
 
@@ -23,7 +23,7 @@ public:
 
 private:
     super_cube &cube;
-    HardwareSerial &serial;
+    HardwareSerial *serial;
 };
 
 #endif // SERIAL_HANDLER_H

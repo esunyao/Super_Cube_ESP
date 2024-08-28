@@ -20,7 +20,7 @@ class Shell;
 
 class super_cube {
 public:
-    super_cube(HardwareSerial &serial);
+    super_cube(HardwareSerial *serial);
 
     ~super_cube();
 
@@ -29,8 +29,8 @@ public:
     void loop();
 
     CommandRegistry *command_registry;
-    HardwareSerial &serial;
     Adafruit_NeoPixel *strip;
+    HardwareSerial *serial;
 protected:
     void _connectWiFi(const char *ssid, const char *password);
     void _command_register();

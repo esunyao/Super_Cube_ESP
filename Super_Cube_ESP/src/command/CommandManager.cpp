@@ -9,14 +9,15 @@
 #include <functional>
 #include <map>
 #include <command/CommandManager.h>
+#include <HardwareSerial.h>
 
 // 实现 Shell 类
 void Shell::println(const char *message) {
     // 打印消息到命令行
-    serial.println(message);
+    serial->println(message);
 }
 
-Shell::Shell(HardwareSerial &serial) : serial(serial) {}
+Shell::Shell(super_cube &superCube, HardwareSerial *serial) : superCube(superCube), serial(serial) {}
 
 // 实现 Command 类
 Command::Command(flash_string_vector name,
