@@ -21,6 +21,8 @@ jobs:
         run: pip install --upgrade platformio
       - name: Turn to the project
         run: cd Super_Cube_ESP
+      - name: tree
+        run: tree
       - name: Load Project
         run: pio project config --json-output
       - name: Build PlatformIO Project
