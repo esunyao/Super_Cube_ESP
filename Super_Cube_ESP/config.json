@@ -4,7 +4,7 @@
   "ID": "",
   "Internet": {
     "ssid": "inhand",
-    "passwd": "asdfqwer"
+    "passwd": "33336666"
   },
   "http": {
     "port": 80
@@ -13,9 +13,12 @@
     "ip": "",
     "port": 80
   },
-  "Webhook":{
+  "Mqtt":{
     "ip": "",
-    "port": 80
+    "port": 80,
+    "username": "",
+    "password": "",
+    "topic": "cube/topic"
   },
   "serverMode": "http"
 }

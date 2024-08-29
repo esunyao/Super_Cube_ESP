@@ -12,16 +12,18 @@
 class HttpServer {
 
 public:
-    HttpServer(super_cube *superCube);
+    HttpServer(super_cube *superCube, int port);
 
     void start();
 
     void handleClient();
-
-private:
+protected:
     void handleRoot();
 
     void handleNotFound();
+    void handleData();
+private:
+
 
     ESP8266WebServer httpServer;
     super_cube *superCube;

@@ -13,6 +13,8 @@
 #include <Adafruit_NeoPixel.h>
 #include "service/HTTPService.h"
 #include <ESP8266WebServer.h>
+#include <service/WebsocketService.h>
+#include <service/MqttService.h>
 
 class SerialHandler;
 
@@ -21,6 +23,10 @@ class CommandRegistry;
 class Shell;
 
 class HttpServer;
+
+class MqttService;
+
+class WebSocketService;
 
 class super_cube {
 public:
@@ -58,6 +64,9 @@ public:
     Adafruit_NeoPixel *strip;
     HardwareSerial *serial;
     ConfigManager *config_manager;
+    HttpServer *httpServer;
+    WebSocketService *webSocketService;
+    MqttService *mqttService;
 protected:
     template<typename Func>
     void _running(Func func, bool running) {
@@ -72,7 +81,7 @@ protected:
 private:
     bool DEBUG = false;
     SerialHandler *serialHandler;
-    HttpServer *httpServer;
+
 };
 
 #endif //SUPER_CUBE_ESP_SUEPR_CUBE_H

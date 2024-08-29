@@ -14,9 +14,11 @@
 super_cube::super_cube(HardwareSerial *serial) : command_registry(new CommandRegistry(*this)),
                                                  serial(serial),
                                                  config_manager(&ConfigManager::getInstance()),
-                                                 serialHandler(new SerialHandler(this, this->serial)),
-                                                 httpServer(new HttpServer(this)) {
+                                                 serialHandler(new SerialHandler(this, this->serial)) {
     strip = nullptr;
+    httpServer = nullptr;
+    webSocketService = nullptr;
+    mqttService = nullptr;
 }
 
 super_cube::~super_cube() {
@@ -34,6 +36,17 @@ void super_cube::setup() {
         DEBUG_MODE_SET(true);
     serialHandler->start();
     debugln("[DEBUG] Loading Config Complete");
+    httpServer = new HttpServer(this, static_cast<int>(config_manager->getConfig()["http"]["port"].as<int>()));
+    webSocketService = new WebSocketService(this,
+                                            static_cast<String>(config_manager->getConfig()["Websocket"]["ip"].as<String>()),
+                                            static_cast<int>(config_manager->getConfig()["Websocket"]["port"].as<int>()));
+    mqttService = new MqttService(this,
+                                  static_cast<String>(config_manager->getConfig()["Mqtt"]["ip"].as<String>()),
+                                  static_cast<int>(config_manager->getConfig()["Mqtt"]["port"].as<int>()),
+                                  static_cast<String>(config_manager->getConfig()["ID"].as<String>()),
+                                  static_cast<String>(config_manager->getConfig()["Mqtt"]["username"].as<String>()),
+                                  static_cast<String>(config_manager->getConfig()["Mqtt"]["password"].as<String>()),
+                                  static_cast<String>(config_manager->getConfig()["Mqtt"]["topic"].as<String>()));
     debugln("[DEBUG] Config: ", config_manager->getConfig().as<String>());
     _connectWiFi(config_manager->getConfig()["Internet"]["ssid"], config_manager->getConfig()["Internet"]["passwd"]);
     command_registry->add_command(Command(
@@ -52,14 +65,30 @@ void super_cube::setup() {
                 shell->getSuperCube()->config_manager->saveConfig();
             }
     ));
-    debugln("[DEBUG] Command Registry Initialized");
+    debugln("[DEBUG] Starting HTTP Server...");
     httpServer->start();
-    debugln("[DEBUG] HTTP Server Started");
+    debugln("[DEBUG] HTTP Server Started, Listening...");
+    if (config_manager->getConfig()["serverMode"] == "Websocket") {
+        debugln("\n[DEBUG] Mode has been select as Websocket");
+        debugln("[DEBUG] Starting Websocket Server...");
+        webSocketService->start();
+        debugln("[DEBUG] Websocket Server Started, Listening...");
+    }
+    if (config_manager->getConfig()["serverMode"] == "Mqtt") {
+        debugln("\n[DEBUG] Mode has been select as Mqtt");
+        debugln("[DEBUG] Starting Mqtt Client...");
+        mqttService->start();
+        debugln("[DEBUG] Mqtt Server Started, Listening...");
+    }
 }
 
 void super_cube::loop() {
 //    Serial.println(reinterpret_cast<uintptr_t>(this), HEX);
     serialHandler->handleSerial();
+    httpServer->handleClient();
+    if (config_manager->getConfig()["serverMode"] == "Websocket" && webSocketService->webSocket != nullptr) {
+        webSocketService->webSocket->loop();
+    }
 }
 
 void super_cube::_command_register() {

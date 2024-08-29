@@ -70,18 +70,20 @@ bool ConfigManager::readConfig() {
 }
 
 void ConfigManager::createDefaultConfig() {
-    // Create the default configuration based on the template
     String uuid = generateUUIDv4();
     configDoc["reset"] = false;
     configDoc["DEBUG"] = false;
-    configDoc["ID"] = uuid.substring(uuid.length() - 5);  // You can set a default ID here if needed
+    configDoc["ID"] = uuid.substring(uuid.length() - 5);
     configDoc["Internet"]["ssid"] = "inhand";
     configDoc["Internet"]["passwd"] = "33336666";
     configDoc["http"]["port"] = 80;
     configDoc["Websocket"]["ip"] = "";
     configDoc["Websocket"]["port"] = 80;
-    configDoc["Webhook"]["ip"] = "";
-    configDoc["Webhook"]["port"] = 80;
+    configDoc["Mqtt"]["ip"] = "";
+    configDoc["Mqtt"]["port"] = 80;
+    configDoc["Mqtt"]["username"] = "";
+    configDoc["Mqtt"]["password"] = "";
+    configDoc["Mqtt"]["topic"] = "cube/topic";
     configDoc["serverMode"] = "http";
 }
 
@@ -95,7 +97,7 @@ bool ConfigManager::validateConfig() {
             {"Internet",   {"ssid", "passwd"}},
             {"http",       {"port"}},
             {"Websocket",  {"ip",   "port"}},
-            {"Webhook",    {"ip",   "port"}},
+            {"Mqtt",       {"ip",   "port", "username", "password", "topic"}},
             {"serverMode", {}}
     };
 
