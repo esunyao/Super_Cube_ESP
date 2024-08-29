@@ -35,7 +35,7 @@ public:
     explicit CommandNode(const std::string& name);
 
     CommandNode& then(std::unique_ptr<CommandNode> next);
-    CommandNode& runs(CommandFunction func);
+    std::unique_ptr<CommandNode> runs(CommandFunction func);
 
     const CommandNode* find_node(const std::vector<std::string>& path, std::map<std::string, std::variant<int, std::string, bool>>& context) const;
     void execute(Shell* shell, const std::map<std::string, std::variant<int, std::string, bool>>& context) const;

@@ -30,9 +30,9 @@ CommandNode &CommandNode::then(std::unique_ptr<CommandNode> next) {
     return *this;
 }
 
-CommandNode &CommandNode::runs(CommandFunction func) {
+std::unique_ptr<CommandNode> CommandNode::runs(CommandFunction func) {
     commandFunc = std::move(func);
-    return *this;
+    return std::unique_ptr<CommandNode>(this);
 }
 
 const CommandNode *CommandNode::find_node(const std::vector<std::string> &path,

@@ -50,15 +50,12 @@ void super_cube::setup() {
     debugln("[DEBUG] Config: ", config_manager->getConfig().as<String>());
     _connectWiFi(config_manager->getConfig()["Internet"]["ssid"], config_manager->getConfig()["Internet"]["passwd"]);
 
-    // 正确传递 unique_ptr 到 then() 方法
-    auto configCommand = std::make_unique<CommandNode>("config");
-    // Call the runs method on the CommandNode object
-    configCommand->runs(
-            [this](Shell *shell, const std::map<std::string, std::variant<int, std::string, bool>> &context) {
-                shell->println("asdf");
-            });
-    // Register the command
-    command_registry->register_command(std::move(configCommand));
+    command_registry->register_command(
+            command_registry->Literal("config")
+                    ->runs([this](Shell* shell, const std::map<std::string, std::variant<int, std::string, bool>>& context) {
+                        shell->println("asdf");
+                    })
+    );
 
 
     debugln("[DEBUG] Starting HTTP Server...");
