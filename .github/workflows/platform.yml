@@ -30,7 +30,7 @@ jobs:
         working-directory: ./Super_Cube_ESP
 
       - name: Upload output file
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4.3.6
         with:
           name: output-files
           path: |
