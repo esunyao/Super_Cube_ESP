@@ -11,12 +11,16 @@
 #include "command/CommandManager.h"
 #include "handler/console_handler.h"
 #include <Adafruit_NeoPixel.h>
+#include "service/HTTPService.h"
+#include <ESP8266WebServer.h>
 
 class SerialHandler;
 
 class CommandRegistry;
 
 class Shell;
+
+class HttpServer;
 
 class super_cube {
 public:
@@ -36,13 +40,15 @@ public:
 
     template<typename T, typename... Args>
     void debugln(const T &first, const Args &... rest) {
-        _running([this, &first]() { serial->println(first); }, DEBUG);
+        _running([this, &first]() { serial->print(first); }, DEBUG);
         _running([this, &rest...]() { debugln(rest...); }, DEBUG);
     }
 
     void debug() {}
 
-    void debugln() {}
+    void debugln() {
+        serial->println();
+    }
 
     void DEBUG_MODE_SET(bool mode) {
         DEBUG = mode;
@@ -66,6 +72,7 @@ protected:
 private:
     bool DEBUG = false;
     SerialHandler *serialHandler;
+    HttpServer *httpServer;
 };
 
 #endif //SUPER_CUBE_ESP_SUEPR_CUBE_H

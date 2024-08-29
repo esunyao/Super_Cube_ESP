@@ -7,8 +7,6 @@
 
 #include "Adafruit_NeoPixel.h"
 
-extern const char *_ssid;
-extern const char *_password;
 const int baud = 115200;
 
 

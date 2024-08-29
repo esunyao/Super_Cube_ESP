@@ -22,7 +22,6 @@ super_cube *Shell::getSuperCube() {
 }
 
 Shell::Shell(super_cube *superCube, HardwareSerial *serial) : superCube(superCube), serial(serial) {}
-
 // 实现 Command 类
 Command::Command(flash_string_vector name,
                  flash_string_vector arguments,

@@ -7,7 +7,6 @@
     "passwd": "asdfqwer"
   },
   "http": {
-    "ip": "",
     "port": 80
   },
   "Websocket": {

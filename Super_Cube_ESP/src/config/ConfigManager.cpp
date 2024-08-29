@@ -76,8 +76,7 @@ void ConfigManager::createDefaultConfig() {
     configDoc["DEBUG"] = false;
     configDoc["ID"] = uuid.substring(uuid.length() - 5);  // You can set a default ID here if needed
     configDoc["Internet"]["ssid"] = "inhand";
-    configDoc["Internet"]["passwd"] = "asdfqwer";
-    configDoc["http"]["ip"] = "";
+    configDoc["Internet"]["passwd"] = "33336666";
     configDoc["http"]["port"] = 80;
     configDoc["Websocket"]["ip"] = "";
     configDoc["Websocket"]["port"] = 80;
@@ -94,7 +93,7 @@ bool ConfigManager::validateConfig() {
             {"DEBUG",      {}},
             {"ID",         {}},
             {"Internet",   {"ssid", "passwd"}},
-            {"http",       {"ip",   "port"}},
+            {"http",       {"port"}},
             {"Websocket",  {"ip",   "port"}},
             {"Webhook",    {"ip",   "port"}},
             {"serverMode", {}}

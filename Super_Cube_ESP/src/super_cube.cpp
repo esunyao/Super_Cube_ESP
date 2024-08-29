@@ -14,7 +14,8 @@
 super_cube::super_cube(HardwareSerial *serial) : command_registry(new CommandRegistry(*this)),
                                                  serial(serial),
                                                  config_manager(&ConfigManager::getInstance()),
-                                                 serialHandler(new SerialHandler(this, this->serial)) {
+                                                 serialHandler(new SerialHandler(this, this->serial)),
+                                                 httpServer(new HttpServer(this)) {
     strip = nullptr;
 }
 
@@ -24,17 +25,17 @@ super_cube::~super_cube() {
     delete serialHandler, serialHandler = nullptr;
     delete config_manager, config_manager = nullptr;
     delete strip, strip = nullptr;
+    delete httpServer, httpServer = nullptr;
 }
 
 void super_cube::setup() {
     config_manager->initialize();
     if (config_manager->getConfig()["DEBUG"])
         DEBUG_MODE_SET(true);
-    debug("Loading Config Complete");
-    debug(config_manager->getConfig().as<String>());
     serialHandler->start();
-    _connectWiFi(_ssid, _password);
-    serial->println(config_manager->getConfig().as<String>());
+    debugln("[DEBUG] Loading Config Complete");
+    debugln("[DEBUG] Config: ", config_manager->getConfig().as<String>());
+    _connectWiFi(config_manager->getConfig()["Internet"]["ssid"], config_manager->getConfig()["Internet"]["passwd"]);
     command_registry->add_command(Command(
             flash_string_vector{"digitalRead"}, // Convert F() result to std::string
             flash_string_vector{"<pin>"}, // Convert F() result to std::string
@@ -47,10 +48,13 @@ void super_cube::setup() {
             flash_string_vector{"debug"}, // Convert F() result to std::string
             flash_string_vector{"<pin>"}, // Convert F() result to std::string
             [](Shell *shell, const std::vector<std::string> &arguments) {
-//                shell->getSuperCube().config_manager->getConfig()["DEBUG"] = true;
+                shell->getSuperCube()->config_manager->getConfig()["DEBUG"] = true;
                 shell->getSuperCube()->config_manager->saveConfig();
             }
     ));
+    debugln("[DEBUG] Command Registry Initialized");
+    httpServer->start();
+    debugln("[DEBUG] HTTP Server Started");
 }
 
 void super_cube::loop() {
