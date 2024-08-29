@@ -5,120 +5,116 @@
 #include <main_.h>
 #include <EEPROM.h>
 #include <ArduinoJson.h>
+#include <utils/uuid_utils.h>
 
-std::map<String, int> EEPROMManager::mappingTable;
-
+// Constructor to initialize EEPROM
 EEPROMManager::EEPROMManager() {
     EEPROM.begin(EEPROM_SIZE);
     this->eepromSize = EEPROM_SIZE;
-    this->nextAddress = 0;
 }
 
+// Initialize EEPROM and load config
 void EEPROMManager::initialize() {
-    if (!readMappingTable()) {
+    // Read config from EEPROM
+    if (!readConfig() || !validateConfig()) {
+        // Handle invalid or missing config
         clear();
+        clearConfigDoc();
+        // Optionally set default config here if needed
+        createDefaultConfig();  // Create the default config
+        saveConfig();  // Save it to EEPROM
+    }
+    if (configDoc["reset"] == true) {
+        clear();
+        clearConfigDoc();
+        createDefaultConfig();  // Create the default config
+        saveConfig();  // Save it to EEPROM
     }
 }
 
-void EEPROMManager::writeString(const String &name, const String &str) {
-    int address = getAddress(name);
-    if (address == -1) {
-        address = allocateMemory(name, str.length() + 1);
-    }
-
-    for (unsigned int i = 0; i < str.length(); i++) {
-        EEPROM.write(address + i, str[i]);
-    }
-    EEPROM.write(address + str.length(), '\0');
-    EEPROM.commit();
-}
-
-String EEPROMManager::readString(const String &name) {
-    int address = getAddress(name);
-    if (address == -1) return "";
-
-    String str;
-    char ch;
-    while ((ch = EEPROM.read(address++)) != '\0') {
-        str += ch;
-    }
-    return str;
-}
-
+// Clear the EEPROM
 void EEPROMManager::clear() {
     for (unsigned int i = 0; i < EEPROM.length(); i++) {
         EEPROM.write(i, 0);
     }
     EEPROM.commit();
-    mappingTable.clear();
-    nextAddress = 0;
 }
 
-int EEPROMManager::getAddress(const String &name) {
-    if (mappingTable.find(name) != mappingTable.end()) {
-        return mappingTable[name];
-    }
-    return -1;
-}
-
-int EEPROMManager::allocateMemory(const String &name, int size) {
-    if (nextAddress + size >= eepromSize) {
-        return -1;
-    }
-
-    int address = nextAddress;
-    mappingTable[name] = address;
-    nextAddress += size;
-    saveMappingTable();
-    return address;
-}
-
-void EEPROMManager::saveMappingTable() {
-    JsonDocument doc;
-    for (const auto &kv : mappingTable) {
-        doc[kv.first] = kv.second;
-    }
-
+// Save the config from the JsonDocument to EEPROM
+void EEPROMManager::saveConfig() {
     String json;
-    serializeJson(doc, json);
+    serializeJson(configDoc, json);
 
     int len = json.length();
-    EEPROM.write(0, len);
+    EEPROM.write(0, len);  // Write the length of the JSON data
     for (int i = 0; i < len; i++) {
-        EEPROM.write(1 + i, json[i]);
+        EEPROM.write(1 + i, json[i]);  // Write the JSON data itself
     }
     EEPROM.commit();
 }
 
-bool EEPROMManager::readMappingTable() {
-    int len = EEPROM.read(0);
+// Read the config from EEPROM into the JsonDocument
+bool EEPROMManager::readConfig() {
+    int len = EEPROM.read(0);  // First byte is the length
+    clearConfigDoc();
     if (len > 0 && len < eepromSize) {
         String json;
         for (int i = 0; i < len; i++) {
-            json += (char) EEPROM.read(1 + i);
+            json += (char) EEPROM.read(1 + i);  // Read the JSON string
         }
 
-        JsonDocument doc;
-        DeserializationError error = deserializeJson(doc, json);
-        if (!error) {
-            for (JsonPair kv : doc.as<JsonObject>()) {
-                mappingTable[kv.key().c_str()] = kv.value().as<int>();
-            }
-            nextAddress = findNextAvailableAddress();
-            return true;
-        }
+        DeserializationError error = deserializeJson(configDoc, json);
+        return !error;  // Return true if deserialization was successful
     }
-    return false;
+    return false;  // Return false if there was an issue reading or deserializing
 }
 
-int EEPROMManager::findNextAvailableAddress() {
-    int maxAddress = 0;
-    for (const auto &kv : mappingTable) {
-        int address = kv.second;
-        int size = kv.second;
-        if (address + size > maxAddress) {
-            maxAddress = address + size;
+void EEPROMManager::createDefaultConfig() {
+    // Create the default configuration based on the template
+    String uuid = generateUUIDv4();
+    configDoc["reset"] = false;
+    configDoc["ID"] = uuid.substring(uuid.length() - 5);  // You can set a default ID here if needed
+    configDoc["Internet"]["ssid"] = "inhand";
+    configDoc["Internet"]["passwd"] = "asdfqwer";
+    configDoc["http"]["ip"] = "";
+    configDoc["http"]["port"] = 80;
+    configDoc["Websocket"]["ip"] = "";
+    configDoc["Websocket"]["port"] = 80;
+    configDoc["Webhook"]["ip"] = "";
+    configDoc["Webhook"]["port"] = 80;
+    configDoc["serverMode"] = "http";
+}
+
+// Validate the config JSON structure
+bool EEPROMManager::validateConfig() {
+    // List of required keys and their sub-keys
+    const std::map<String, std::vector<String>> requiredKeys = {
+            {"reset",      {}},
+            {"ID",         {}},
+            {"Internet",   {"ssid", "passwd"}},
+            {"http",       {"ip",   "port"}},
+            {"Websocket",  {"ip",   "port"}},
+            {"Webhook",    {"ip",   "port"}},
+            {"serverMode", {}}
+    };
+
+    // Iterate through the required keys and check if they exist in the config
+    for (const auto &key: requiredKeys) {
+        if (!configDoc.containsKey(key.first)) {
+            return false;
+        }
+        for (const auto &subKey: key.second) {
+            if (!configDoc[key.first].containsKey(subKey)) {
+                return false;
+            }
         }
     }
-    return maxAddress;
+
+    // Additional checks for specific value constraints can be added here
+
+    return true;
+}
+
+void EEPROMManager::clearConfigDoc() {
+    configDoc.clear();
 }

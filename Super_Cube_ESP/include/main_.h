@@ -15,8 +15,7 @@ const int baud = 115200;
 
 /* EEPROM */
 #define EEPROM_SIZE 8192         // EEPROM 内存空间
-const char EEPROM_INIT_FLAG = '\13';      // EEPROM 初始化标记
-const char EEPROM_END_CHAR = '\12';       // EEPROM 终点标志
+#define JSON_SIZE 512            // JSON 文档大小
 
 
 //void setup();

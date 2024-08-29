@@ -31,11 +31,12 @@ public:
     CommandRegistry *command_registry;
     Adafruit_NeoPixel *strip;
     HardwareSerial *serial;
+    EEPROMManager *EEPROM_Manger;
 protected:
     void _connectWiFi(const char *ssid, const char *password);
     void _command_register();
 private:
-    EEPROMManager EEPROM_Manger;
+
     SerialHandler *serialHandler;
 };
 

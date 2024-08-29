@@ -1,7 +1,8 @@
 {
+  "reset": true,
   "ID": "",
   "Internet": {
-    "ssid": "SSID",
+    "ssid": "inhand",
     "passwd": "asdfqwer"
   },
   "http": {

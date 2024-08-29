@@ -10,31 +10,29 @@
 
 class EEPROMManager {
 public:
+    static EEPROMManager &getInstance() {
+        static EEPROMManager instance; // 保证只会创建一次，并在第一次使用时初始化
+        return instance;
+    }
+
     EEPROMManager();
 
     void initialize();
 
-    void writeString(const String &name, const String &str);
-
-    String readString(const String &name);
-
-protected:
     void clear();
 
-    int getAddress(const String &name);
+    void saveConfig();
 
-    int allocateMemory(const String &name, int size);
+    bool readConfig();
 
-    void saveMappingTable();
-
-    bool readMappingTable();
-
-    static int findNextAvailableAddress();
+    bool validateConfig();
 
 private:
-    static std::map<String, int> mappingTable;
     int eepromSize;
-    int nextAddress;
+    JsonDocument configDoc;
+    void createDefaultConfig();
+
+    void clearConfigDoc();
 };
 
 #endif // EEPROM_UTILS_H

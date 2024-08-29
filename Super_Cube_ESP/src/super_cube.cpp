@@ -11,15 +11,19 @@
 #include <main_.h>
 #include <HardwareSerial.h>
 
-super_cube::super_cube(HardwareSerial *serial) : EEPROM_Manger(),
-                                                  command_registry(new CommandRegistry(*this)),
+super_cube::super_cube(HardwareSerial *serial) : command_registry(new CommandRegistry(*this)),
                                                   serial(serial),
+                                                  EEPROM_Manger(&EEPROMManager::getInstance()),
                                                   serialHandler(new SerialHandler(*this, serial)) {
     strip = nullptr;
 }
 
 super_cube::~super_cube() {
     // Destructor implementation
+    delete command_registry, command_registry = nullptr;
+    delete serialHandler, serialHandler = nullptr;
+    delete EEPROM_Manger, EEPROM_Manger = nullptr;
+    delete strip, strip = nullptr;
 }
 
 void super_cube::setup() {
