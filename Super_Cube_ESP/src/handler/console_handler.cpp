@@ -4,7 +4,7 @@
 #include <handler/console_handler.h>
 #include <main_.h>
 
-SerialHandler::SerialHandler(super_cube &cube, HardwareSerial *serial)
+SerialHandler::SerialHandler(super_cube *cube, HardwareSerial *serial)
         : cube(cube), serial(serial) {}
 
 void SerialHandler::start() {
@@ -36,7 +36,7 @@ void SerialHandler::handleSerial() {
             for (int i = 1; i < tokenCount; ++i) {
                 args.push_back(tokens[i].c_str());
             }
-            cube.command_registry->execute_command(new Shell(cube, serial), command_name.c_str(), args);
+            cube->command_registry->execute_command(new Shell(cube, serial), command_name.c_str(), args);
         }
     }
 }

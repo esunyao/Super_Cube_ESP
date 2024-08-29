@@ -7,7 +7,7 @@
 
 #include <HardwareSerial.h>
 #include "EEPROM.h"
-#include "utils/EEPROM_Utils.h"
+#include "config/ConfigManager.h"
 #include "command/CommandManager.h"
 #include "handler/console_handler.h"
 #include <Adafruit_NeoPixel.h>
@@ -28,15 +28,43 @@ public:
 
     void loop();
 
+    template<typename T, typename... Args>
+    void debug(const T &first, const Args &... rest) {
+        _running([this, &first]() { serial->print(first); }, DEBUG);
+        _running([this, &rest...]() { debug(rest...); }, DEBUG);
+    }
+
+    template<typename T, typename... Args>
+    void debugln(const T &first, const Args &... rest) {
+        _running([this, &first]() { serial->println(first); }, DEBUG);
+        _running([this, &rest...]() { debugln(rest...); }, DEBUG);
+    }
+
+    void debug() {}
+
+    void debugln() {}
+
+    void DEBUG_MODE_SET(bool mode) {
+        DEBUG = mode;
+    }
+
     CommandRegistry *command_registry;
     Adafruit_NeoPixel *strip;
     HardwareSerial *serial;
-    EEPROMManager *EEPROM_Manger;
+    ConfigManager *config_manager;
 protected:
-    void _connectWiFi(const char *ssid, const char *password);
-    void _command_register();
-private:
+    template<typename Func>
+    void _running(Func func, bool running) {
+        if (running)
+            func();
+    }
 
+    void _connectWiFi(const char *ssid, const char *password);
+
+    void _command_register();
+
+private:
+    bool DEBUG = false;
     SerialHandler *serialHandler;
 };
 

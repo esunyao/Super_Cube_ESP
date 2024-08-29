@@ -18,12 +18,14 @@ class super_cube;
 // Declare the Shell class
 class Shell {
 public:
-    Shell(super_cube &superCube, HardwareSerial *serial);
+    Shell(super_cube *superCube, HardwareSerial *serial);
 
     void println(const char *message);
 
+    super_cube *getSuperCube();
+
 private:
-    super_cube &superCube;
+    super_cube *superCube;
     HardwareSerial *serial;
 };
 

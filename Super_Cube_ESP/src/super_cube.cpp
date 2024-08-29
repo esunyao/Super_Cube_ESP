@@ -12,9 +12,9 @@
 #include <HardwareSerial.h>
 
 super_cube::super_cube(HardwareSerial *serial) : command_registry(new CommandRegistry(*this)),
-                                                  serial(serial),
-                                                  EEPROM_Manger(&EEPROMManager::getInstance()),
-                                                  serialHandler(new SerialHandler(*this, serial)) {
+                                                 serial(serial),
+                                                 config_manager(&ConfigManager::getInstance()),
+                                                 serialHandler(new SerialHandler(this, this->serial)) {
     strip = nullptr;
 }
 
@@ -22,14 +22,19 @@ super_cube::~super_cube() {
     // Destructor implementation
     delete command_registry, command_registry = nullptr;
     delete serialHandler, serialHandler = nullptr;
-    delete EEPROM_Manger, EEPROM_Manger = nullptr;
+    delete config_manager, config_manager = nullptr;
     delete strip, strip = nullptr;
 }
 
 void super_cube::setup() {
-//    EEPROM_Manger.initialize();
+    config_manager->initialize();
+    if (config_manager->getConfig()["DEBUG"])
+        DEBUG_MODE_SET(true);
+    debug("Loading Config Complete");
+    debug(config_manager->getConfig().as<String>());
     serialHandler->start();
     _connectWiFi(_ssid, _password);
+    serial->println(config_manager->getConfig().as<String>());
     command_registry->add_command(Command(
             flash_string_vector{"digitalRead"}, // Convert F() result to std::string
             flash_string_vector{"<pin>"}, // Convert F() result to std::string
@@ -39,10 +44,11 @@ void super_cube::setup() {
             }
     ));
     command_registry->add_command(Command(
-            flash_string_vector{"digitalRead1"}, // Convert F() result to std::string
+            flash_string_vector{"debug"}, // Convert F() result to std::string
             flash_string_vector{"<pin>"}, // Convert F() result to std::string
             [](Shell *shell, const std::vector<std::string> &arguments) {
-
+//                shell->getSuperCube().config_manager->getConfig()["DEBUG"] = true;
+                shell->getSuperCube()->config_manager->saveConfig();
             }
     ));
 }

@@ -17,7 +17,11 @@ void Shell::println(const char *message) {
     serial->println(message);
 }
 
-Shell::Shell(super_cube &superCube, HardwareSerial *serial) : superCube(superCube), serial(serial) {}
+super_cube *Shell::getSuperCube() {
+    return this->superCube;
+}
+
+Shell::Shell(super_cube *superCube, HardwareSerial *serial) : superCube(superCube), serial(serial) {}
 
 // 实现 Command 类
 Command::Command(flash_string_vector name,

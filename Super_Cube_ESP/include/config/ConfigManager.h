@@ -6,16 +6,16 @@
 #define EEPROM_UTILS_H
 
 #include <map>
-#include <ArduinoJson.h>
+#include "ArduinoJson.h"
 
-class EEPROMManager {
+class ConfigManager {
 public:
-    static EEPROMManager &getInstance() {
-        static EEPROMManager instance; // 保证只会创建一次，并在第一次使用时初始化
+    static ConfigManager &getInstance() {
+        static ConfigManager instance; // 保证只会创建一次，并在第一次使用时初始化
         return instance;
     }
 
-    EEPROMManager();
+    ConfigManager();
 
     void initialize();
 
@@ -27,9 +27,12 @@ public:
 
     bool validateConfig();
 
+    JsonDocument &getConfig();
+
 private:
     int eepromSize;
     JsonDocument configDoc;
+
     void createDefaultConfig();
 
     void clearConfigDoc();

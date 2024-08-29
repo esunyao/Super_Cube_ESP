@@ -1,20 +1,20 @@
 //
 // Created by Esuny on 2024/8/26.
 //
-#include "utils/EEPROM_Utils.h"
-#include <main_.h>
+#include "config/ConfigManager.h"
+#include "main_.h"
 #include <EEPROM.h>
-#include <ArduinoJson.h>
-#include <utils/uuid_utils.h>
+#include "ArduinoJson.h"
+#include "utils/uuid_utils.h"
 
 // Constructor to initialize EEPROM
-EEPROMManager::EEPROMManager() {
+ConfigManager::ConfigManager() {
     EEPROM.begin(EEPROM_SIZE);
     this->eepromSize = EEPROM_SIZE;
 }
 
 // Initialize EEPROM and load config
-void EEPROMManager::initialize() {
+void ConfigManager::initialize() {
     // Read config from EEPROM
     if (!readConfig() || !validateConfig()) {
         // Handle invalid or missing config
@@ -33,7 +33,7 @@ void EEPROMManager::initialize() {
 }
 
 // Clear the EEPROM
-void EEPROMManager::clear() {
+void ConfigManager::clear() {
     for (unsigned int i = 0; i < EEPROM.length(); i++) {
         EEPROM.write(i, 0);
     }
@@ -41,7 +41,7 @@ void EEPROMManager::clear() {
 }
 
 // Save the config from the JsonDocument to EEPROM
-void EEPROMManager::saveConfig() {
+void ConfigManager::saveConfig() {
     String json;
     serializeJson(configDoc, json);
 
@@ -54,7 +54,7 @@ void EEPROMManager::saveConfig() {
 }
 
 // Read the config from EEPROM into the JsonDocument
-bool EEPROMManager::readConfig() {
+bool ConfigManager::readConfig() {
     int len = EEPROM.read(0);  // First byte is the length
     clearConfigDoc();
     if (len > 0 && len < eepromSize) {
@@ -69,10 +69,11 @@ bool EEPROMManager::readConfig() {
     return false;  // Return false if there was an issue reading or deserializing
 }
 
-void EEPROMManager::createDefaultConfig() {
+void ConfigManager::createDefaultConfig() {
     // Create the default configuration based on the template
     String uuid = generateUUIDv4();
     configDoc["reset"] = false;
+    configDoc["DEBUG"] = false;
     configDoc["ID"] = uuid.substring(uuid.length() - 5);  // You can set a default ID here if needed
     configDoc["Internet"]["ssid"] = "inhand";
     configDoc["Internet"]["passwd"] = "asdfqwer";
@@ -86,10 +87,11 @@ void EEPROMManager::createDefaultConfig() {
 }
 
 // Validate the config JSON structure
-bool EEPROMManager::validateConfig() {
+bool ConfigManager::validateConfig() {
     // List of required keys and their sub-keys
     const std::map<String, std::vector<String>> requiredKeys = {
             {"reset",      {}},
+            {"DEBUG",      {}},
             {"ID",         {}},
             {"Internet",   {"ssid", "passwd"}},
             {"http",       {"ip",   "port"}},
@@ -115,6 +117,10 @@ bool EEPROMManager::validateConfig() {
     return true;
 }
 
-void EEPROMManager::clearConfigDoc() {
+void ConfigManager::clearConfigDoc() {
     configDoc.clear();
+}
+
+JsonDocument &ConfigManager::getConfig() {
+    return configDoc;
 }

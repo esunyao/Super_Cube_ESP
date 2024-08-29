@@ -13,7 +13,7 @@ class super_cube;
 class SerialHandler {
 public:
 
-    SerialHandler(super_cube &cube, HardwareSerial *serial);
+    SerialHandler(super_cube *cube, HardwareSerial *serial);
 
     void start();
 
@@ -22,7 +22,7 @@ public:
     void sendResponse(const String &response);
 
 private:
-    super_cube &cube;
+    super_cube *cube;
     HardwareSerial *serial;
 };
 
