@@ -28,3 +28,11 @@ jobs:
       - name: Build PlatformIO Project
         run: pio run -e nodemcuv2
         working-directory: ./Super_Cube_ESP
+
+      - name: Upload output file
+        uses: actions/upload-artifact@v2
+        with:
+          name: output-files
+          path: |
+            ./Super_Cube_ESP/.pio/build/nodemcuv2/firmware.bin
+            ./Super_Cube_ESP/.pio/build/nodemcuv2/firmware.elf
