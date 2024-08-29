@@ -3,85 +3,125 @@
 // Created by Esuny on 2024/8/27.
 //
 // Include necessary headers
-#include <memory>
-#include <vector>
-#include <string>
-#include <functional>
-#include <map>
-#include <command/CommandManager.h>
-#include <HardwareSerial.h>
+#include "command/CommandManager.h"
+#include <iostream>
+#include <sstream>
+#include <algorithm>
+#include <cctype>
+#include <stdexcept>
 
 // 实现 Shell 类
 void Shell::println(const char *message) {
     // 打印消息到命令行
-    serial->println(message);
+    superCube->serial->println(message);
 }
 
 super_cube *Shell::getSuperCube() {
     return this->superCube;
 }
 
-Shell::Shell(super_cube *superCube, HardwareSerial *serial) : superCube(superCube), serial(serial) {}
-// 实现 Command 类
-Command::Command(flash_string_vector name,
-                 flash_string_vector arguments,
-                 CommandFunction execute,
-                 CompletionFunction complete)
-        : name(std::move(name)), arguments(std::move(arguments)), execute(std::move(execute)),
-          complete(std::move(complete)) {}
+Shell::Shell(super_cube *superCube) : superCube(superCube) {}
 
-// 运行命令
-void Command::run(Shell *shell, const std::vector<std::string> &args) const {
-    execute(shell, args);
+// CommandNode 类实现
+CommandNode::CommandNode(const std::string &name) : name(name), commandFunc(nullptr) {}
+
+CommandNode &CommandNode::then(std::unique_ptr<CommandNode> next) {
+    children[next->get_name()] = std::move(next);
+    return *this;
 }
 
-// 获取命令补全建议
-std::vector<std::string> Command::get_completions(Shell *shell, const std::vector<std::string> &current_args,
-                                                  const std::string &next_arg) const {
-    if (complete) {
-        return complete(shell, current_args, next_arg);
+CommandNode &CommandNode::runs(CommandFunction func) {
+    commandFunc = std::move(func);
+    return *this;
+}
+
+const CommandNode *CommandNode::find_node(const std::vector<std::string> &path,
+                                          std::map<std::string, std::variant<int, std::string, bool>> &context) const {
+    if (path.empty()) {
+        return this;
     }
-    return {};
+
+    auto it = children.find(path[0]);
+    if (it != children.end()) {
+        std::vector<std::string> subPath(path.begin() + 1, path.end());
+        return it->second->find_node(subPath, context);
+    }
+
+    // Check for Integer type
+    if (!path[0].empty() && std::all_of(path[0].begin(), path[0].end(), ::isdigit)) {
+        context[name] = std::stoi(path[0]);
+        return find_node(std::vector<std::string>(path.begin() + 1, path.end()), context);
+    }
+
+    // Check for Boolean type
+    if (path[0] == "true" || path[0] == "false") {
+        context[name] = (path[0] == "true");
+        return find_node(std::vector<std::string>(path.begin() + 1, path.end()), context);
+    }
+
+    // Default to String type
+    context[name] = path[0];
+    return find_node(std::vector<std::string>(path.begin() + 1, path.end()), context);
 }
 
-// 获取命令名称
-const flash_string_vector &Command::get_name() const {
+void
+CommandNode::execute(Shell *shell, const std::map<std::string, std::variant<int, std::string, bool>> &context) const {
+    if (commandFunc) {
+        commandFunc(shell, context);
+    } else {
+        shell->println("Error: No function to execute.");
+    }
+}
+
+const std::string &CommandNode::get_name() const {
     return name;
 }
 
-// 实现 CommandRegistry 类
-CommandRegistry::CommandRegistry(super_cube &superCube) : superCube(superCube) {}
-
-void CommandRegistry::add_command(const Command &command) {
-    // 将命令添加到命令映射中
-    commands[command.get_name()[0]] = command;
+// CommandRegistry 类实现
+void CommandRegistry::register_command(std::unique_ptr<CommandNode> root) {
+    commands[root->get_name()] = std::move(root);
 }
 
-// 执行指定名称的命令
-void
-CommandRegistry::execute_command(Shell *shell, const std::string &name, const std::vector<std::string> &arguments) {
-    auto it = commands.find(name);
-    if (it != commands.end()) {
-        it->second.run(shell, arguments);
-    } else {
-        shell->println("Command not found");
+void CommandRegistry::execute_command(Shell *shell, const std::string &input) const {
+    std::istringstream iss(input);
+    std::vector<std::string> tokens;
+    std::string token;
+
+    while (iss >> token) {
+        tokens.push_back(token);
+    }
+
+    if (!tokens.empty()) {
+        auto it = commands.find(tokens[0]);
+        if (it != commands.end()) {
+            std::vector<std::string> subPath(tokens.begin() + 1, tokens.end());
+            std::map<std::string, std::variant<int, std::string, bool>> context;
+            const CommandNode *node = it->second->find_node(subPath, context);
+
+            if (node) {
+                node->execute(shell, context);
+            } else {
+                shell->println("Error: Command not found or invalid parameters.");
+            }
+        } else {
+            shell->println("Error: Command not found.");
+        }
     }
 }
 
-// 获取命令补全建议
-std::vector<std::string> CommandRegistry::get_command_completions(Shell &shell, const std::string &name,
-                                                                  const std::vector<std::string> &current_arguments,
-                                                                  const std::string &next_argument) {
-    auto it = commands.find(name);
-    if (it != commands.end()) {
-        return it->second.get_completions(&shell, current_arguments, next_argument);
-    }
-    return {};
+// 辅助函数实现
+std::unique_ptr<CommandNode> Literal(const std::string &name) {
+    return std::make_unique<CommandNode>(name);
 }
 
-// 打印所有命令
-void CommandRegistry::print_all_commands(Shell &shell) {
-    for (const auto &entry: commands) {
-        shell.println(entry.first.c_str());
-    }
+std::unique_ptr<CommandNode> Integer(const std::string &name) {
+    return std::make_unique<CommandNode>(name);
+}
+
+std::unique_ptr<CommandNode> StringParam(const std::string &name) {
+    return std::make_unique<CommandNode>(name);
+}
+
+std::unique_ptr<CommandNode> Boolean(const std::string &name) {
+    return std::make_unique<CommandNode>(name);
 }

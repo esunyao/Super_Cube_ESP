@@ -11,7 +11,7 @@
 #include <main_.h>
 #include <HardwareSerial.h>
 
-super_cube::super_cube(HardwareSerial *serial) : command_registry(new CommandRegistry(*this)),
+super_cube::super_cube(HardwareSerial *serial) : command_registry(new CommandRegistry()),
                                                  serial(serial),
                                                  config_manager(&ConfigManager::getInstance()),
                                                  serialHandler(new SerialHandler(this, this->serial)) {
@@ -49,22 +49,18 @@ void super_cube::setup() {
                                   static_cast<String>(config_manager->getConfig()["Mqtt"]["topic"].as<String>()));
     debugln("[DEBUG] Config: ", config_manager->getConfig().as<String>());
     _connectWiFi(config_manager->getConfig()["Internet"]["ssid"], config_manager->getConfig()["Internet"]["passwd"]);
-    command_registry->add_command(Command(
-            flash_string_vector{"digitalRead"}, // Convert F() result to std::string
-            flash_string_vector{"<pin>"}, // Convert F() result to std::string
-            [](Shell *shell, const std::vector<std::string> &arguments) {
-                shell->println(arguments[0].c_str());
-                shell->println("啊拒绝哦i解耦i飞机破i");
-            }
-    ));
-    command_registry->add_command(Command(
-            flash_string_vector{"debug"}, // Convert F() result to std::string
-            flash_string_vector{"<pin>"}, // Convert F() result to std::string
-            [](Shell *shell, const std::vector<std::string> &arguments) {
-                shell->getSuperCube()->config_manager->getConfig()["DEBUG"] = true;
-                shell->getSuperCube()->config_manager->saveConfig();
-            }
-    ));
+
+    // 正确传递 unique_ptr 到 then() 方法
+    auto configCommand = std::make_unique<CommandNode>("config");
+    // Call the runs method on the CommandNode object
+    configCommand->runs(
+            [this](Shell *shell, const std::map<std::string, std::variant<int, std::string, bool>> &context) {
+                shell->println("asdf");
+            });
+    // Register the command
+    command_registry->register_command(std::move(configCommand));
+
+
     debugln("[DEBUG] Starting HTTP Server...");
     httpServer->start();
     debugln("[DEBUG] HTTP Server Started, Listening...");

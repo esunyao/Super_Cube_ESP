@@ -5,20 +5,19 @@
 #ifndef COMMAND_MANAGER_H
 #define COMMAND_MANAGER_H
 
-#include <memory>
-#include <vector>
 #include <string>
-#include <functional>
+#include <vector>
 #include <map>
-#include <HardwareSerial.h>
-#include "super_cube.h"
+#include <memory>
+#include <functional>
+#include <variant>
+#include <super_cube.h>
 
 class super_cube;
 
-// Declare the Shell class
 class Shell {
 public:
-    Shell(super_cube *superCube, HardwareSerial *serial);
+    Shell(super_cube *superCube);
 
     void println(const char *message);
 
@@ -26,58 +25,53 @@ public:
 
 private:
     super_cube *superCube;
-    HardwareSerial *serial;
 };
 
-// Define flash_string_vector as a vector of strings
-using flash_string_vector = std::vector<std::string>;
 
-class Command {
+class CommandNode {
 public:
-    using CommandFunction = std::function<void(Shell *, const std::vector<std::string> &)>;
-    using CompletionFunction = std::function<std::vector<std::string>(Shell *, const std::vector<std::string> &,
-                                                                      const std::string &)>;
+    using CommandFunction = std::function<void(Shell*, const std::map<std::string, std::variant<int, std::string, bool>>&)>;
 
-    // Default constructor
-    Command() = default;
+    explicit CommandNode(const std::string& name);
 
-    Command(flash_string_vector name,
-            flash_string_vector arguments,
-            CommandFunction execute,
-            CompletionFunction complete = [](Shell *, const std::vector<std::string> &,
-                                             const std::string &) { return std::vector<std::string>{}; });
+    CommandNode& then(std::unique_ptr<CommandNode> next);
+    CommandNode& runs(CommandFunction func);
 
-    void run(Shell *shell, const std::vector<std::string> &args) const;
+    const CommandNode* find_node(const std::vector<std::string>& path, std::map<std::string, std::variant<int, std::string, bool>>& context) const;
+    void execute(Shell* shell, const std::map<std::string, std::variant<int, std::string, bool>>& context) const;
 
-    std::vector<std::string>
-    get_completions(Shell *shell, const std::vector<std::string> &current_args, const std::string &next_arg) const;
-
-    const flash_string_vector &get_name() const;
+    const std::string& get_name() const;
 
 private:
-    flash_string_vector name;
-    flash_string_vector arguments;
-    CommandFunction execute;
-    CompletionFunction complete;
+    std::string name;
+    CommandFunction commandFunc;
+    std::map<std::string, std::unique_ptr<CommandNode>> children;
 };
 
 class CommandRegistry {
 public:
-    CommandRegistry(super_cube &superCube);
+    void register_command(std::unique_ptr<CommandNode> root);
+    void execute_command(Shell* shell, const std::string& input) const;
 
-    void add_command(const Command &command);
+    // 修改后的工厂方法封装参数类型并返回 std::unique_ptr<CommandNode>
+    std::unique_ptr<CommandNode> Literal(const std::string& name) {
+        return std::make_unique<CommandNode>(name);
+    }
 
-    void execute_command(Shell *shell, const std::string &name, const std::vector<std::string> &arguments);
+    std::unique_ptr<CommandNode> StringParam(const std::string& name) {
+        return std::make_unique<CommandNode>(name);
+    }
 
-    std::vector<std::string>
-    get_command_completions(Shell &shell, const std::string &name, const std::vector<std::string> &current_arguments,
-                            const std::string &next_argument);
+    std::unique_ptr<CommandNode> BooleanParam(const std::string& name) {
+        return std::make_unique<CommandNode>(name);
+    }
 
-    void print_all_commands(Shell &shell);
+    std::unique_ptr<CommandNode> IntegerParam(const std::string& name) {
+        return std::make_unique<CommandNode>(name);
+    }
 
 private:
-    std::map<std::string, Command> commands;
-    super_cube &superCube;
+    std::map<std::string, std::unique_ptr<CommandNode>> commands;
 };
 
 #endif // COMMAND_MANAGER_H
