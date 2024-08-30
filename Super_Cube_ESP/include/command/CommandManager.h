@@ -35,8 +35,8 @@ public:
 
     explicit CommandNode(const std::string &name);
 
-    std::unique_ptr<CommandNode> then(std::unique_ptr<CommandNode> next);
-    std::unique_ptr<CommandNode> runs(CommandFunction func);
+    CommandNode* then(CommandNode* next);
+    CommandNode* runs(CommandFunction func);
 
     const CommandNode *find_node(const std::vector<std::string> &path, std::map<std::string, std::variant<int, std::string, bool>> &context) const;
     void execute(Shell *shell, R &context) const;
@@ -60,20 +60,20 @@ public:
     void execute_command(Shell *shell, const std::string &input) const;
 
     // 修改后的工厂方法封装参数类型并返回 std::unique_ptr<CommandNode>
-    std::unique_ptr<CommandNode> Literal(const std::string &name) {
-        return std::make_unique<CommandNode>(name);
+    CommandNode* Literal(const std::string &name) {
+        return new CommandNode(name);
     }
 
-    std::unique_ptr<CommandNode> StringParam(const std::string &name) {
-        return std::make_unique<CommandNode>(name);
+    CommandNode* StringParam(const std::string &name) {
+        return new CommandNode(name);
     }
 
-    std::unique_ptr<CommandNode> BooleanParam(const std::string &name) {
-        return std::make_unique<CommandNode>(name);
+    CommandNode* BooleanParam(const std::string &name) {
+        return new CommandNode(name);
     }
 
-    std::unique_ptr<CommandNode> IntegerParam(const std::string &name) {
-        return std::make_unique<CommandNode>(name);
+    CommandNode* IntegerParam(const std::string &name) {
+        return new CommandNode(name);
     }
 
 private:

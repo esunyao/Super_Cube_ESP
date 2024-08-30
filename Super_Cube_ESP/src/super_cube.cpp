@@ -50,14 +50,18 @@ void super_cube::setup() {
     debugln("[DEBUG] Config: ", config_manager->getConfig().as<String>());
     _connectWiFi(config_manager->getConfig()["Internet"]["ssid"], config_manager->getConfig()["Internet"]["passwd"]);
     command_registry->register_command(
-            command_registry->Literal("config")
-                    ->runs([this](Shell *shell, CommandNode::R &context) {
-                        shell->println("asdf");
-                    })
-                    ->then(command_registry->IntegerParam("use")->runs([this](Shell *shell, CommandNode::R &context) {
-                               shell->getSuperCube()->debugln((String)CommandNode::context_to_string(context).c_str());
-                           })
-                    )
+            std::unique_ptr<CommandNode>(
+                    command_registry->Literal("config")
+                            ->runs([this](Shell *shell, CommandNode::R &context) {
+                                shell->println("asdf");
+                            })
+                            ->then(command_registry->Literal("get")
+                                           ->runs([this](Shell *shell, CommandNode::R &context) {
+                                               shell->getSuperCube()->debugln("[DEBUG] Config: ",
+                                                                              shell->getSuperCube()->config_manager->getConfig().as<String>());
+                                           })
+                            )
+            )
     );
 
 

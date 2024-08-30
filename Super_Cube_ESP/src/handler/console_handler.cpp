@@ -20,7 +20,7 @@ void SerialHandler::handleSerial() {
 //        int tokenCount = 0;
 //        int startIndex = 0;
 //        int endIndex = input.indexOf(' ');
-        sendResponse(input);
+//        sendResponse(input);
 //        while (endIndex != -1 && tokenCount < 10) {
 //            tokens[tokenCount++] = input.substring(startIndex, endIndex);
 //            startIndex = endIndex + 1;

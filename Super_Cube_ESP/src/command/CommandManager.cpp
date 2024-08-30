@@ -25,14 +25,14 @@ Shell::Shell(super_cube *superCube) : superCube(superCube) {}
 // CommandNode 类实现
 CommandNode::CommandNode(const std::string &name) : name(name), commandFunc(nullptr) {}
 
-std::unique_ptr<CommandNode> CommandNode::then(std::unique_ptr<CommandNode> next) {
-    children[next->get_name()] = std::move(next);
-    return std::unique_ptr<CommandNode>(this);
+CommandNode* CommandNode::then(CommandNode* next) {
+    children[next->get_name()] = std::unique_ptr<CommandNode>(next);
+    return this;
 }
 
-std::unique_ptr<CommandNode> CommandNode::runs(CommandFunction func) {
+CommandNode* CommandNode::runs(CommandFunction func) {
     commandFunc = std::move(func);
-    return std::unique_ptr<CommandNode>(this);
+    return this;
 }
 
 const CommandNode *CommandNode::find_node(const std::vector<std::string> &path,
