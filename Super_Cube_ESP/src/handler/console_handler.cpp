@@ -5,7 +5,9 @@
 #include <main_.h>
 
 SerialHandler::SerialHandler(super_cube *cube, HardwareSerial *serial)
-        : cube(cube), serial(serial) {}
+        : superCube(cube), serial(serial) {
+    shell = new Shell(cube);
+}
 
 void SerialHandler::start() {
     serial->begin(baud);
@@ -36,7 +38,7 @@ void SerialHandler::handleSerial() {
 //            for (int i = 1; i < tokenCount; ++i) {
 //                args.push_back(tokens[i].c_str());
 //            }
-        cube->command_registry->execute_command(new Shell(cube), std::string(input.c_str()));
+        superCube->command_registry->execute_command(shell, std::string(input.c_str()));
     }
 }
 

@@ -27,25 +27,54 @@ private:
     super_cube *superCube;
 };
 
+class RC : public std::map<std::string, std::variant<int, std::string, bool>> {
+public:
+    using Base = std::map<std::string, std::variant<int, std::string, bool>>;
+
+    using Base::operator[];
+    using Base::at;
+    using Base::find;
+    using Base::erase;
+    using Base::insert;
+    using Base::begin;
+    using Base::end;
+    using Base::size;
+    using Base::empty;
+    using Base::clear;
+
+    template <typename T>
+    T get(const std::string& key) const {
+        auto it = this->find(key);
+        if (it != this->end()) {
+            // 使用 std::get_if 来检查类型是否匹配
+            if (auto value = std::get_if<T>(&(it->second))) {
+                return *value;  // 如果类型匹配，返回值
+            }
+        }
+        // 返回类型T的默认值
+        return T{};
+    }
+
+
+};
 
 class CommandNode {
 public:
-    using R = const std::map<std::string, std::variant<int, std::string, bool>>;
-    using CommandFunction = std::function<void(Shell *, R &)>;
+
+    using R = RC;
+    using CommandFunction = std::function<void(Shell *, const R &)>;
 
     explicit CommandNode(const std::string &name);
 
-    CommandNode* then(CommandNode* next);
-    CommandNode* runs(CommandFunction func);
+    CommandNode *then(CommandNode *next);
 
-    const CommandNode *find_node(const std::vector<std::string> &path, std::map<std::string, std::variant<int, std::string, bool>> &context) const;
-    void execute(Shell *shell, R &context) const;
+    CommandNode *runs(CommandFunction func);
+
+    const CommandNode *find_node(const std::vector<std::string> &path, R &context) const;
+
+    void execute(Shell *shell, const R &context) const;
 
     const std::string &get_name() const;
-
-    static std::string context_to_string(const R &context);
-//    static bool context_to_boolean(const R &context);
-//    static int context_to_int(const R &context);
 
 private:
     std::string name;
@@ -60,19 +89,19 @@ public:
     void execute_command(Shell *shell, const std::string &input) const;
 
     // 修改后的工厂方法封装参数类型并返回 std::unique_ptr<CommandNode>
-    CommandNode* Literal(const std::string &name) {
+    CommandNode *Literal(const std::string &name) {
         return new CommandNode(name);
     }
 
-    CommandNode* StringParam(const std::string &name) {
+    CommandNode *StringParam(const std::string &name) {
         return new CommandNode(name);
     }
 
-    CommandNode* BooleanParam(const std::string &name) {
+    CommandNode *BooleanParam(const std::string &name) {
         return new CommandNode(name);
     }
 
-    CommandNode* IntegerParam(const std::string &name) {
+    CommandNode *IntegerParam(const std::string &name) {
         return new CommandNode(name);
     }
 

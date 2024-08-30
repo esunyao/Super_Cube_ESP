@@ -52,14 +52,15 @@ void super_cube::setup() {
     command_registry->register_command(
             std::unique_ptr<CommandNode>(
                     command_registry->Literal("config")
-                            ->runs([this](Shell *shell, CommandNode::R &context) {
-                                shell->println("asdf");
-                            })
                             ->then(command_registry->Literal("get")
-                                           ->runs([this](Shell *shell, CommandNode::R &context) {
-                                               shell->getSuperCube()->debugln("[DEBUG] Config: ",
-                                                                              shell->getSuperCube()->config_manager->getConfig().as<String>());
+                                           ->runs([this](Shell *shell, const CommandNode::R &context) {
+                                               shell->getSuperCube()->serial->println(
+                                                       shell->getSuperCube()->config_manager->getConfig().as<String>());
                                            })
+                            )->then(command_registry->StringParam("fff")
+                                            ->runs([this](Shell *shell, const CommandNode::R &context) {
+                                                shell->getSuperCube()->serial->println(context.get<int>("fff"));
+                                            })
                             )
             )
     );

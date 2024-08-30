@@ -83,7 +83,7 @@ void ConfigManager::createDefaultConfig() {
     configDoc["Mqtt"]["port"] = 80;
     configDoc["Mqtt"]["username"] = "";
     configDoc["Mqtt"]["password"] = "";
-    configDoc["Mqtt"]["topic"] = "cube/topic";
+    configDoc["Mqtt"]["topic"] = "superCube/topic";
     configDoc["serverMode"] = "http";
 }
 

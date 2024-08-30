@@ -36,7 +36,7 @@ CommandNode* CommandNode::runs(CommandFunction func) {
 }
 
 const CommandNode *CommandNode::find_node(const std::vector<std::string> &path,
-                                          std::map<std::string, std::variant<int, std::string, bool>> &context) const {
+                                          R &context) const {
     if (path.empty()) {
         return this;
     }
@@ -65,7 +65,7 @@ const CommandNode *CommandNode::find_node(const std::vector<std::string> &path,
 }
 
 void
-CommandNode::execute(Shell *shell, const std::map<std::string, std::variant<int, std::string, bool>> &context) const {
+CommandNode::execute(Shell *shell, const R &context) const {
     if (commandFunc) {
         commandFunc(shell, context);
     } else {
@@ -95,7 +95,7 @@ void CommandRegistry::execute_command(Shell *shell, const std::string &input) co
         auto it = commands.find(tokens[0]);
         if (it != commands.end()) {
             std::vector<std::string> subPath(tokens.begin() + 1, tokens.end());
-            std::map<std::string, std::variant<int, std::string, bool>> context;
+            CommandNode::R context;
             const CommandNode *node = it->second->find_node(subPath, context);
 
             if (node) {
@@ -108,33 +108,3 @@ void CommandRegistry::execute_command(Shell *shell, const std::string &input) co
         }
     }
 }
-
-std::string CommandNode::context_to_string(const R &context) {
-    std::ostringstream oss;
-    for (const auto &pair : context) {
-        oss << pair.first << ": ";
-        if (std::holds_alternative<int>(pair.second)) {
-            oss << std::get<int>(pair.second);
-        } else if (std::holds_alternative<std::string>(pair.second)) {
-            oss << std::get<std::string>(pair.second);
-        } else if (std::holds_alternative<bool>(pair.second)) {
-            oss << (std::get<bool>(pair.second) ? "true" : "false");
-        }
-        oss << "\n";
-    }
-    return oss.str();
-}
-
-//int CommandNode::context_to_int(const CommandNode::R &context) {
-//    if (context.find(key) != context.end() && std::holds_alternative<int>(context.at(key))) {
-//        return std::get<int>(context.at(key));
-//    }
-//    throw std::invalid_argument("Key not found or not an int");
-//}
-//
-//bool CommandNode::context_to_boolean(const CommandNode::R &context) {
-//    if (context.find(key) != context.end() && std::holds_alternative<bool>(context.at(key))) {
-//        return std::get<bool>(context.at(key));
-//    }
-//    throw std::invalid_argument("Key not found or not a boolean");
-//}

@@ -10,6 +10,8 @@
 
 class super_cube;
 
+class Shell;
+
 class SerialHandler {
 public:
 
@@ -22,7 +24,8 @@ public:
     void sendResponse(const String &response);
 
 private:
-    super_cube *cube;
+    super_cube *superCube;
+    Shell *shell;
     HardwareSerial *serial;
 };
 
