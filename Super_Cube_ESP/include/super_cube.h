@@ -28,6 +28,8 @@ class MqttService;
 
 class WebSocketService;
 
+class ConfigManager;
+
 class super_cube {
 public:
     super_cube(HardwareSerial *serial);

@@ -13,7 +13,7 @@
 
 super_cube::super_cube(HardwareSerial *serial) : command_registry(new CommandRegistry()),
                                                  serial(serial),
-                                                 config_manager(&ConfigManager::getInstance()),
+                                                 config_manager(&ConfigManager::getInstance(this)),
                                                  serialHandler(new SerialHandler(this, this->serial)) {
     strip = nullptr;
     httpServer = nullptr;
@@ -37,6 +37,7 @@ void super_cube::setup() {
     serialHandler->start();
     debugln("[DEBUG] Loading Config Complete");
     httpServer = new HttpServer(this, static_cast<int>(config_manager->getConfig()["http"]["port"].as<int>()));
+    config_manager->command_initialize();
     webSocketService = new WebSocketService(this,
                                             static_cast<String>(config_manager->getConfig()["Websocket"]["ip"].as<String>()),
                                             static_cast<int>(config_manager->getConfig()["Websocket"]["port"].as<int>()));
@@ -49,23 +50,6 @@ void super_cube::setup() {
                                   static_cast<String>(config_manager->getConfig()["Mqtt"]["topic"].as<String>()));
     debugln("[DEBUG] Config: ", config_manager->getConfig().as<String>());
     _connectWiFi(config_manager->getConfig()["Internet"]["ssid"], config_manager->getConfig()["Internet"]["passwd"]);
-    command_registry->register_command(
-            std::unique_ptr<CommandNode>(
-                    command_registry->Literal("config")
-                            ->then(command_registry->Literal("get")
-                                           ->runs([this](Shell *shell, const CommandNode::R &context) {
-                                               shell->getSuperCube()->serial->println(
-                                                       shell->getSuperCube()->config_manager->getConfig().as<String>());
-                                           })
-                            )->then(command_registry->StringParam("fff")
-                                            ->runs([this](Shell *shell, const CommandNode::R &context) {
-                                                shell->getSuperCube()->serial->println(context.get<int>("fff"));
-                                            })
-                            )
-            )
-    );
-
-
     debugln("[DEBUG] Starting HTTP Server...");
     httpServer->start();
     debugln("[DEBUG] HTTP Server Started, Listening...");

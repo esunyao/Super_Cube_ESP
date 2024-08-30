@@ -21,13 +21,26 @@ public:
 
     void println(const char *message);
 
+    void print(const char *message);
+
     super_cube *getSuperCube();
 
 private:
     super_cube *superCube;
 };
 
-class RC : public std::map<std::string, std::variant<int, std::string, bool>> {
+class TYPE {
+public:
+    static const std::string STRING() { return "STRING"; }
+
+    static const std::string BOOLEAN() { return "BOOLEAN"; }
+
+    static const std::string INTEGER() { return "INTEGER"; }
+
+    static const std::string NONE() { return "NONE"; }
+};
+
+class R : public std::map<std::string, std::variant<int, std::string, bool>> {
 public:
     using Base = std::map<std::string, std::variant<int, std::string, bool>>;
 
@@ -42,8 +55,8 @@ public:
     using Base::empty;
     using Base::clear;
 
-    template <typename T>
-    T get(const std::string& key) const {
+    template<typename T>
+    T get(const std::string &key) const {
         auto it = this->find(key);
         if (it != this->end()) {
             // 使用 std::get_if 来检查类型是否匹配
@@ -55,16 +68,31 @@ public:
         return T{};
     }
 
-
+    void print(Shell *shell) const {
+        for (const auto &[key, value]: *this) {
+            shell->print("Key:");
+            shell->print(key.c_str());
+            shell->print(", Value: ");
+            if (std::holds_alternative<int>(value)) {
+                shell->println(std::to_string(std::get<int>(value)).c_str());
+            } else if (std::holds_alternative<std::string>(value)) {
+                shell->println(
+                        std::get<std::string>(value).c_str());
+            } else if (std::holds_alternative<bool>(value)) {
+                shell->println(std::to_string(std::get<bool>(value)).c_str());
+            }
+        }
+    }
 };
 
 class CommandNode {
 public:
 
-    using R = RC;
     using CommandFunction = std::function<void(Shell *, const R &)>;
 
     explicit CommandNode(const std::string &name);
+
+    explicit CommandNode(const std::string &name, const std::string &type);
 
     CommandNode *then(CommandNode *next);
 
@@ -78,6 +106,7 @@ public:
 
 private:
     std::string name;
+    std::string type;
     CommandFunction commandFunc;
     std::map<std::string, std::unique_ptr<CommandNode>> children;
 };
@@ -94,15 +123,15 @@ public:
     }
 
     CommandNode *StringParam(const std::string &name) {
-        return new CommandNode(name);
+        return new CommandNode(name, TYPE::STRING());
     }
 
     CommandNode *BooleanParam(const std::string &name) {
-        return new CommandNode(name);
+        return new CommandNode(name, TYPE::BOOLEAN());
     }
 
     CommandNode *IntegerParam(const std::string &name) {
-        return new CommandNode(name);
+        return new CommandNode(name, TYPE::INTEGER());
     }
 
 private:

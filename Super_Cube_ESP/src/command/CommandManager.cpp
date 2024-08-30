@@ -16,6 +16,11 @@ void Shell::println(const char *message) {
     superCube->serial->println(message);
 }
 
+void Shell::print(const char *message) {
+    // 打印消息到命令行
+    superCube->serial->print(message);
+}
+
 super_cube *Shell::getSuperCube() {
     return this->superCube;
 }
@@ -23,46 +28,65 @@ super_cube *Shell::getSuperCube() {
 Shell::Shell(super_cube *superCube) : superCube(superCube) {}
 
 // CommandNode 类实现
-CommandNode::CommandNode(const std::string &name) : name(name), commandFunc(nullptr) {}
+CommandNode::CommandNode(const std::string &name) : name(name), commandFunc(nullptr), type(TYPE::NONE()) {}
 
-CommandNode* CommandNode::then(CommandNode* next) {
+CommandNode::CommandNode(const std::string &name, const std::string &type) : name(name), type(type),
+                                                                             commandFunc(nullptr) {}
+
+CommandNode *CommandNode::then(CommandNode *next) {
     children[next->get_name()] = std::unique_ptr<CommandNode>(next);
     return this;
 }
 
-CommandNode* CommandNode::runs(CommandFunction func) {
+CommandNode *CommandNode::runs(CommandFunction func) {
     commandFunc = std::move(func);
     return this;
 }
 
-const CommandNode *CommandNode::find_node(const std::vector<std::string> &path,
-                                          R &context) const {
+const CommandNode *CommandNode::find_node(const std::vector<std::string> &path, R &context) const {
     if (path.empty()) {
         return this;
     }
 
+    std::printf("\n-----------------------------------\npath[0]: %s\n", path[0].c_str());
+    // Check for a literal match
     auto it = children.find(path[0]);
     if (it != children.end()) {
         std::vector<std::string> subPath(path.begin() + 1, path.end());
         return it->second->find_node(subPath, context);
     }
 
-    // Check for Integer type
-    if (!path[0].empty() && std::all_of(path[0].begin(), path[0].end(), ::isdigit)) {
-        context[name] = std::stoi(path[0]);
-        return find_node(std::vector<std::string>(path.begin() + 1, path.end()), context);
+    // Check for specific parameter types based on registered commands
+    for (const auto &child: children) {
+        const std::string &childName = child.first;
+        const std::string &childType = child.second->type;
+        std::printf("childName: %s\n", childName.c_str());
+        std::printf("childType: %s\n", childType.c_str());
+
+        // Check for IntegerParam registration
+        if (childType == TYPE::INTEGER() && std::all_of(path[0].begin(), path[0].end(), ::isdigit)) {
+            context[childName] = std::stoi(path[0]);
+            return child.second->find_node(std::vector<std::string>(path.begin() + 1, path.end()), context);
+        }
+
+        // Check for BooleanParam registration
+        if (childType == TYPE::BOOLEAN() && (path[0] == "true" || path[0] == "false")) {
+            context[childName] = (path[0] == "true");
+            return child.second->find_node(std::vector<std::string>(path.begin() + 1, path.end()), context);
+        }
+
+        // Check for StringParam registration
+        if (childType == TYPE::STRING()) {
+            context[childName] = path[0];
+            return child.second->find_node(std::vector<std::string>(path.begin() + 1, path.end()), context);
+        }
     }
 
-    // Check for Boolean type
-    if (path[0] == "true" || path[0] == "false") {
-        context[name] = (path[0] == "true");
-        return find_node(std::vector<std::string>(path.begin() + 1, path.end()), context);
-    }
-
-    // Default to String type
+    // Default case if no matches found
     context[name] = path[0];
     return find_node(std::vector<std::string>(path.begin() + 1, path.end()), context);
 }
+
 
 void
 CommandNode::execute(Shell *shell, const R &context) const {
@@ -95,7 +119,7 @@ void CommandRegistry::execute_command(Shell *shell, const std::string &input) co
         auto it = commands.find(tokens[0]);
         if (it != commands.end()) {
             std::vector<std::string> subPath(tokens.begin() + 1, tokens.end());
-            CommandNode::R context;
+            R context;
             const CommandNode *node = it->second->find_node(subPath, context);
 
             if (node) {
