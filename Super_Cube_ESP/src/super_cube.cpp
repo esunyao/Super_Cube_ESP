@@ -49,12 +49,15 @@ void super_cube::setup() {
                                   static_cast<String>(config_manager->getConfig()["Mqtt"]["topic"].as<String>()));
     debugln("[DEBUG] Config: ", config_manager->getConfig().as<String>());
     _connectWiFi(config_manager->getConfig()["Internet"]["ssid"], config_manager->getConfig()["Internet"]["passwd"]);
-
     command_registry->register_command(
             command_registry->Literal("config")
-                    ->runs([this](Shell* shell, const std::map<std::string, std::variant<int, std::string, bool>>& context) {
+                    ->runs([this](Shell *shell, CommandNode::R &context) {
                         shell->println("asdf");
                     })
+                    ->then(command_registry->IntegerParam("use")->runs([this](Shell *shell, CommandNode::R &context) {
+                               shell->getSuperCube()->debugln((String)CommandNode::context_to_string(context).c_str());
+                           })
+                    )
     );
 
 

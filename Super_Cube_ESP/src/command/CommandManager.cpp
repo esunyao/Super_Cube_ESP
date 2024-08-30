@@ -25,9 +25,9 @@ Shell::Shell(super_cube *superCube) : superCube(superCube) {}
 // CommandNode 类实现
 CommandNode::CommandNode(const std::string &name) : name(name), commandFunc(nullptr) {}
 
-CommandNode &CommandNode::then(std::unique_ptr<CommandNode> next) {
+std::unique_ptr<CommandNode> CommandNode::then(std::unique_ptr<CommandNode> next) {
     children[next->get_name()] = std::move(next);
-    return *this;
+    return std::unique_ptr<CommandNode>(this);
 }
 
 std::unique_ptr<CommandNode> CommandNode::runs(CommandFunction func) {
@@ -109,19 +109,32 @@ void CommandRegistry::execute_command(Shell *shell, const std::string &input) co
     }
 }
 
-// 辅助函数实现
-std::unique_ptr<CommandNode> Literal(const std::string &name) {
-    return std::make_unique<CommandNode>(name);
+std::string CommandNode::context_to_string(const R &context) {
+    std::ostringstream oss;
+    for (const auto &pair : context) {
+        oss << pair.first << ": ";
+        if (std::holds_alternative<int>(pair.second)) {
+            oss << std::get<int>(pair.second);
+        } else if (std::holds_alternative<std::string>(pair.second)) {
+            oss << std::get<std::string>(pair.second);
+        } else if (std::holds_alternative<bool>(pair.second)) {
+            oss << (std::get<bool>(pair.second) ? "true" : "false");
+        }
+        oss << "\n";
+    }
+    return oss.str();
 }
 
-std::unique_ptr<CommandNode> Integer(const std::string &name) {
-    return std::make_unique<CommandNode>(name);
-}
-
-std::unique_ptr<CommandNode> StringParam(const std::string &name) {
-    return std::make_unique<CommandNode>(name);
-}
-
-std::unique_ptr<CommandNode> Boolean(const std::string &name) {
-    return std::make_unique<CommandNode>(name);
-}
+//int CommandNode::context_to_int(const CommandNode::R &context) {
+//    if (context.find(key) != context.end() && std::holds_alternative<int>(context.at(key))) {
+//        return std::get<int>(context.at(key));
+//    }
+//    throw std::invalid_argument("Key not found or not an int");
+//}
+//
+//bool CommandNode::context_to_boolean(const CommandNode::R &context) {
+//    if (context.find(key) != context.end() && std::holds_alternative<bool>(context.at(key))) {
+//        return std::get<bool>(context.at(key));
+//    }
+//    throw std::invalid_argument("Key not found or not a boolean");
+//}

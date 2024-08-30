@@ -30,17 +30,22 @@ private:
 
 class CommandNode {
 public:
-    using CommandFunction = std::function<void(Shell*, const std::map<std::string, std::variant<int, std::string, bool>>&)>;
+    using R = const std::map<std::string, std::variant<int, std::string, bool>>;
+    using CommandFunction = std::function<void(Shell *, R &)>;
 
-    explicit CommandNode(const std::string& name);
+    explicit CommandNode(const std::string &name);
 
-    CommandNode& then(std::unique_ptr<CommandNode> next);
+    std::unique_ptr<CommandNode> then(std::unique_ptr<CommandNode> next);
     std::unique_ptr<CommandNode> runs(CommandFunction func);
 
-    const CommandNode* find_node(const std::vector<std::string>& path, std::map<std::string, std::variant<int, std::string, bool>>& context) const;
-    void execute(Shell* shell, const std::map<std::string, std::variant<int, std::string, bool>>& context) const;
+    const CommandNode *find_node(const std::vector<std::string> &path, std::map<std::string, std::variant<int, std::string, bool>> &context) const;
+    void execute(Shell *shell, R &context) const;
 
-    const std::string& get_name() const;
+    const std::string &get_name() const;
+
+    static std::string context_to_string(const R &context);
+//    static bool context_to_boolean(const R &context);
+//    static int context_to_int(const R &context);
 
 private:
     std::string name;
@@ -51,22 +56,23 @@ private:
 class CommandRegistry {
 public:
     void register_command(std::unique_ptr<CommandNode> root);
-    void execute_command(Shell* shell, const std::string& input) const;
+
+    void execute_command(Shell *shell, const std::string &input) const;
 
     // 修改后的工厂方法封装参数类型并返回 std::unique_ptr<CommandNode>
-    std::unique_ptr<CommandNode> Literal(const std::string& name) {
+    std::unique_ptr<CommandNode> Literal(const std::string &name) {
         return std::make_unique<CommandNode>(name);
     }
 
-    std::unique_ptr<CommandNode> StringParam(const std::string& name) {
+    std::unique_ptr<CommandNode> StringParam(const std::string &name) {
         return std::make_unique<CommandNode>(name);
     }
 
-    std::unique_ptr<CommandNode> BooleanParam(const std::string& name) {
+    std::unique_ptr<CommandNode> BooleanParam(const std::string &name) {
         return std::make_unique<CommandNode>(name);
     }
 
-    std::unique_ptr<CommandNode> IntegerParam(const std::string& name) {
+    std::unique_ptr<CommandNode> IntegerParam(const std::string &name) {
         return std::make_unique<CommandNode>(name);
     }
 
