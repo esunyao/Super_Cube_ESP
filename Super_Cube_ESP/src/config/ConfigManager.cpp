@@ -85,6 +85,7 @@ void ConfigManager::createDefaultConfig() {
     configDoc["Mqtt"]["password"] = "";
     configDoc["Mqtt"]["topic"] = "superCube/topic";
     configDoc["serverMode"] = "http";
+    configDoc["light"] = JsonArray();
 }
 
 // Validate the config JSON structure
@@ -106,61 +107,84 @@ bool ConfigManager::validateConfig() {
     return true;
 }
 
+CommandNode *ConfigManager::_init_stringer(std::string node) {
+    return superCube->command_registry
+            ->Literal(node.c_str())
+            ->runs([this, node](Shell *shell, const R &context) {
+                shell->println(configDoc[node].as<String>().c_str());
+            })
+            ->then(superCube->command_registry
+                           ->Literal("set")
+                           ->then(superCube->command_registry
+                                          ->StringParam("value")
+                                          ->runs([this, node](Shell *shell, const R &context) {
+                                              configDoc[node] = context.get<std::string>("value").c_str();
+                                              saveConfig();
+                                          })));
+}
+
+CommandNode *ConfigManager::_init_boolean(std::string node) {
+    return superCube->command_registry
+            ->Literal(node.c_str())
+            ->runs([this, node](Shell *shell, const R &context) {
+                shell->println(configDoc[node].as<String>().c_str());
+            })
+            ->then(superCube->command_registry
+                           ->Literal("set")
+                           ->then(superCube->command_registry
+                                          ->BooleanParam("value")
+                                          ->runs([this, node](Shell *shell, const R &context) {
+                                              configDoc[node] = context.get<boolean>("value");
+                                              saveConfig();
+                                          })));
+}
+
+CommandNode *ConfigManager::_init_inter(std::string node) {
+    return superCube->command_registry
+            ->Literal(node.c_str())
+            ->runs([this, node](Shell *shell, const R &context) {
+                shell->println(configDoc[node].as<String>().c_str());
+            })
+            ->then(superCube->command_registry
+                           ->Literal("set")
+                           ->then(superCube->command_registry
+                                          ->IntegerParam("value")
+                                          ->runs([this, node](Shell *shell, const R &context) {
+                                              configDoc[node] = context.get<int>("value");
+                                              saveConfig();
+                                          })));
+}
+
 void ConfigManager::command_initialize() {
     // Assuming you have included the necessary libraries and defined CommandNode, Shell, R, etc.
+
     CommandNode *literal = superCube->command_registry->Literal("config");
-    CommandNode *set = superCube->command_registry->Literal("set");
-    CommandNode *boolean = set->then(
-            superCube->command_registry->BooleanParam("value")->runs([this](Shell *shell, const R &context) {
-                superCube->serial->println("Boolean command executed.");
-                configDoc[context.get<std::string>("config")] = context.get<bool>("value");
-                saveConfig();
-            })
+    literal->then(superCube->command_registry->Literal("get")->runs([this](Shell *shell, const R &context) {
+                      shell->println(superCube->config_manager->getConfig().as<String>().c_str());
+                  })
     );
 
-    CommandNode *stringer = set->then(
-            superCube->command_registry->StringParam("value")->runs([this](Shell *shell, const R &context) {
-                superCube->serial->println("String command executed.");
-                configDoc[context.get<std::string>("config")] = context.get<std::string>("value");
-                saveConfig();
-            })
-    );
-
-    CommandNode *inter = set->then(
-            superCube->command_registry->IntegerParam("value")->runs([this](Shell *shell, const R &context) {
-                superCube->serial->println("Integer command executed.");
-                configDoc[context.get<std::string>("config")] = context.get<int>("value");
-                saveConfig();
-            })
-    );
 
 // Loop through the required keys
     for (const auto &key: requiredKeys) {
-//        superCube->serial->println("Processing key: " + key.first);
-//
-
-        if (key.first == "reset" || key.first == "DEBUG") {
-            literal->then(
-                    superCube->command_registry->Literal(key.first.c_str())->then(boolean)
-            );
-            continue;
-        }
-
-        if (key.first == "ID" || key.first == "serverMode") {
-            literal->then(
-                    superCube->command_registry->Literal(key.first.c_str())->then(stringer)
-            );
-            continue;
+        if (key.second.empty()) {
+            if (configDoc[key.first].is<int>()) {
+                literal->then(_init_inter(key.first));
+            } else if (configDoc[key.first].is<std::string>() || configDoc[key.first].is<String>()) {
+                literal->then(_init_stringer(key.first));
+            } else if (configDoc[key.first].is<bool>()) {
+                literal->then(_init_boolean(key.first));
+            }
         }
         CommandNode *subLiteral = superCube->command_registry->Literal(key.first.c_str());
         for (const auto &subKey: key.second) {
-            superCube->serial->println("  Processing subKey: " + subKey);
+            superCube->serial->println(("  Processing subKey: " + subKey).c_str());
 
             if (subKey == "ssid" || subKey == "passwd" || subKey == "ip" || subKey == "username" ||
                 subKey == "password" || subKey == "topic") {
-                subLiteral->then(superCube->command_registry->Literal(subKey.c_str())->then(stringer));
+                subLiteral->then(superCube->command_registry->Literal(subKey.c_str())->then(_init_stringer(subKey)));
             } else if (subKey == "port") {
-                subLiteral->then(superCube->command_registry->Literal(subKey.c_str())->then(inter));
+                subLiteral->then(superCube->command_registry->Literal(subKey.c_str())->then(_init_inter(subKey)));
             }
         }
         literal->then(subLiteral);

@@ -13,12 +13,13 @@
     "ip": "",
     "port": 80
   },
-  "Mqtt":{
+  "Mqtt": {
     "ip": "",
     "port": 80,
     "username": "",
     "password": "",
     "topic": "cube/topic"
   },
-  "serverMode": "http"
+  "serverMode": "http",
+  "light": []
 }

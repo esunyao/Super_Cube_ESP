@@ -52,6 +52,11 @@ void super_cube::setup() {
     _connectWiFi(config_manager->getConfig()["Internet"]["ssid"], config_manager->getConfig()["Internet"]["passwd"]);
     debugln("[DEBUG] Starting HTTP Server...");
     httpServer->start();
+    command_registry->register_command(std::unique_ptr<CommandNode>(command_registry->Literal("asdf")->then(
+            command_registry->Literal("f")->then(
+                    command_registry->IntegerParam("value")->runs([](Shell *shell, const R &context) {
+                        shell->println(std::to_string(context.get<int>("value")).c_str());
+                    })))));
     debugln("[DEBUG] HTTP Server Started, Listening...");
     if (config_manager->getConfig()["serverMode"] == "Websocket") {
         debugln("\n[DEBUG] Mode has been select as Websocket");

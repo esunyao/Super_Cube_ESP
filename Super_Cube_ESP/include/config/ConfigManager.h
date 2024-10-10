@@ -11,6 +11,8 @@
 
 class super_cube;
 
+class CommandNode;
+
 class ConfigManager {
 public:
     static ConfigManager &getInstance(super_cube *superCube) {
@@ -34,6 +36,15 @@ public:
 
     void command_initialize();
 
+protected:
+    CommandNode *_init_stringer(std::string node);
+
+    CommandNode *_init_boolean(std::string node);
+
+    CommandNode *_init_inter(std::string node);
+
+    CommandNode *_config_registry(std::string node);
+
 private:
     int eepromSize;
     JsonDocument configDoc;
@@ -44,7 +55,7 @@ private:
     void clearConfigDoc();
 
     // List of required keys and their sub-keys
-    const std::map<String, std::vector<String>> requiredKeys = {
+    const std::map<std::string, std::vector<std::string>> requiredKeys = {
             {"reset",      {}},
             {"DEBUG",      {}},
             {"ID",         {}},
@@ -52,7 +63,8 @@ private:
             {"http",       {"port"}},
             {"Websocket",  {"ip",   "port"}},
             {"Mqtt",       {"ip",   "port", "username", "password", "topic"}},
-            {"serverMode", {}}
+            {"serverMode", {}},
+            {"light",      {}}
     };
 };
 
