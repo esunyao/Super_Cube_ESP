@@ -11,8 +11,6 @@ std::unique_ptr<super_cube> cube;
 void setup() {
     cube = std::make_unique<super_cube>(&Serial);
     cube->setup();
-
-
 }
 
 void loop() {

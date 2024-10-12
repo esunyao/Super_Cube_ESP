@@ -19,14 +19,21 @@ class Shell {
 public:
     Shell(super_cube *superCube);
 
+    Shell(super_cube *superCube, bool httpmode);
+
     void println(const char *message);
 
     void print(const char *message);
 
+    void setup();
+
     super_cube *getSuperCube();
 
+    String res;
+    std::unique_ptr<JsonDocument> jsonDoc;
 private:
     super_cube *superCube;
+    bool httpMode = false;
 };
 
 class TYPE {
@@ -104,6 +111,8 @@ public:
 
     const std::string &get_name() const;
 
+    void printTree(int level = 0) const;
+
 private:
     std::string name;
     std::string type;
@@ -116,6 +125,8 @@ public:
     void register_command(std::unique_ptr<CommandNode> root);
 
     void execute_command(Shell *shell, const std::string &input) const;
+
+    void printCommandTree() const;
 
     // 修改后的工厂方法封装参数类型并返回 std::unique_ptr<CommandNode>
     CommandNode *Literal(const std::string &name) {

@@ -56,16 +56,20 @@ private:
 
     // List of required keys and their sub-keys
     const std::map<std::string, std::vector<std::string>> requiredKeys = {
-            {"reset",      {}},
-            {"DEBUG",      {}},
-            {"ID",         {}},
-            {"Internet",   {"ssid", "passwd"}},
-            {"http",       {"port"}},
-            {"Websocket",  {"ip",   "port"}},
-            {"Mqtt",       {"ip",   "port", "username", "password", "topic"}},
-            {"serverMode", {}},
-            {"light",      {}}
+            {"reset",          {}},
+            {"HTTPDEBUG",      {}},
+            {"DEBUG",          {}},
+            {"ID",             {}},
+            {"Internet",       {"ssid", "passwd"}},
+            {"http",           {"port"}},
+            {"Websocket",      {"ip",   "port"}},
+            {"Mqtt",           {"ip",   "port", "username", "password", "topic"}},
+            {"serverMode",     {}},
+            {"light",          {}},
+            {"light_presets",  {}},
     };
+
+    void registerNodeCommands(const std::string &path, JsonVariant variant, CommandNode *parentNode, JsonVariant doc);
 };
 
 #endif // EEPROM_UTILS_H

@@ -40,6 +40,8 @@ public:
 
     void loop();
 
+    bool HTTPServiceDEBUG = false;
+
     template<typename T, typename... Args>
     void debug(const T &first, const Args &... rest) {
         _running([this, &first]() { serial->print(first); }, DEBUG);
@@ -52,6 +54,13 @@ public:
         _running([this, &rest...]() { debugln(rest...); }, DEBUG);
     }
 
+    template<typename... Args>
+    void hdebugln(const Args &... args) {
+        _running([this, args...]() {
+            debugln(args...);
+        }, HTTPServiceDEBUG);
+    }
+
     void debug() {}
 
     void debugln() {
@@ -60,6 +69,10 @@ public:
 
     void DEBUG_MODE_SET(bool mode) {
         DEBUG = mode;
+    }
+
+    void HTTP_DEBUG_MODE_SET(bool mode) {
+        HTTPServiceDEBUG = mode;
     }
 
     CommandRegistry *command_registry;

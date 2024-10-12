@@ -1,6 +1,7 @@
 {
   "reset": true,
   "DEBUG": false,
+  "HTTPDEBUG": false,
   "ID": "",
   "Internet": {
     "ssid": "inhand",
