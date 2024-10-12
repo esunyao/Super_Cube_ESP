@@ -21,5 +21,6 @@
     "topic": "cube/topic"
   },
   "serverMode": "http",
-  "light": []
+  "light": [],
+  "light_presets": {}
 }

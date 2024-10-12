@@ -175,6 +175,7 @@ void ConfigManager::command_initialize() {
             } else if (configDoc[key.first].is<bool>()) {
                 literal->then(_init_boolean(key.first));
             }
+            continue;
         }
         CommandNode *subLiteral = superCube->command_registry->Literal(key.first.c_str());
         for (const auto &subKey: key.second) {
