@@ -14,7 +14,8 @@
 super_cube::super_cube(HardwareSerial *serial) : command_registry(new CommandRegistry()),
                                                  serial(serial),
                                                  config_manager(&ConfigManager::getInstance(this)),
-                                                 serialHandler(new SerialHandler(this, this->serial)) {
+                                                 serialHandler(new SerialHandler(this, this->serial)),
+                                                 lightHandler(new LightHandler(this)){
     strip = nullptr;
     httpServer = nullptr;
     webSocketService = nullptr;
@@ -32,7 +33,6 @@ super_cube::~super_cube() {
 
 void super_cube::setup() {
     config_manager->initialize();
-    _command_register();
     serialHandler->start();
     if (config_manager->getConfig()["DEBUG"])
         DEBUG_MODE_SET(true);
@@ -42,6 +42,8 @@ void super_cube::setup() {
     debugln("[DEBUG] Loading Config Complete");
     httpServer = new HttpServer(this, static_cast<int>(config_manager->getConfig()["http"]["port"].as<int>()));
     config_manager->command_initialize();
+    _command_register();
+    lightHandler->lightInitiation();
     webSocketService = new WebSocketService(this,
                                             static_cast<String>(config_manager->getConfig()["Websocket"]["ip"].as<String>()),
                                             static_cast<int>(config_manager->getConfig()["Websocket"]["port"].as<int>()));
@@ -86,9 +88,14 @@ void super_cube::loop() {
 }
 
 void super_cube::_command_register() {
+    httpServer->commandRegister();
     command_registry->register_command(
             std::unique_ptr<CommandNode>(command_registry->Literal("restart")->runs([](Shell *shell, const R &context) {
                 EspClass::restart();
+            })));
+    command_registry->register_command(
+            std::unique_ptr<CommandNode>(command_registry->Literal("commandtree")->runs([](Shell *shell, const R &context) {
+                shell->getSuperCube()->command_registry->printCommandTree();
             })));
 }
 

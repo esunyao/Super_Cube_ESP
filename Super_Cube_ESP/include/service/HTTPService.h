@@ -18,6 +18,8 @@ public:
 
     void handleClient();
 
+    void commandRegister();
+
 protected:
     template<typename Func>
     void _running(Func func, bool running) {
@@ -35,7 +37,7 @@ protected:
 
     void handleCommandExecution();
 
-    void commandRegister();
+
 
 private:
 

@@ -10,6 +10,7 @@
 #include "config/ConfigManager.h"
 #include "command/CommandManager.h"
 #include "handler/console_handler.h"
+#include "handler/LightHandler.h"
 #include <Adafruit_NeoPixel.h>
 #include "service/HTTPService.h"
 #include <ESP8266WebServer.h>
@@ -27,6 +28,8 @@ class HttpServer;
 class MqttService;
 
 class WebSocketService;
+
+class LightHandler;
 
 class ConfigManager;
 
@@ -82,6 +85,7 @@ public:
     HttpServer *httpServer;
     WebSocketService *webSocketService;
     MqttService *mqttService;
+    LightHandler *lightHandler;
 protected:
     template<typename Func>
     void _running(Func func, bool running) {
