@@ -44,6 +44,7 @@ public:
     void loop();
 
     bool HTTPServiceDEBUG = false;
+    bool MqttServiceDEBUG = false;
 
     template<typename T, typename... Args>
     void debug(const T &first, const Args &... rest) {
@@ -64,6 +65,13 @@ public:
         }, HTTPServiceDEBUG);
     }
 
+    template<typename... Args>
+    void mdebugln(const Args &... args) {
+        _running([this, args...]() {
+            debugln(args...);
+        }, MqttServiceDEBUG);
+    }
+
     void debug() {}
 
     void debugln() {
@@ -76,6 +84,10 @@ public:
 
     void HTTP_DEBUG_MODE_SET(bool mode) {
         HTTPServiceDEBUG = mode;
+    }
+
+    void Mqtt_DEBUG_MODE_SET(bool mode) {
+        MqttServiceDEBUG = mode;
     }
 
     CommandRegistry *command_registry;

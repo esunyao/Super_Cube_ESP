@@ -74,6 +74,7 @@ void ConfigManager::createDefaultConfig() {
     configDoc["reset"] = false;
     configDoc["DEBUG"] = false;
     configDoc["HTTPDEBUG"] = false;
+    configDoc["MQTTDEBUG"] = false;
     configDoc["ID"] = uuid.substring(uuid.length() - 5);
     configDoc["Internet"]["ssid"] = "inhand";
     configDoc["Internet"]["passwd"] = "33336666";
@@ -81,9 +82,10 @@ void ConfigManager::createDefaultConfig() {
     configDoc["Websocket"]["ip"] = "";
     configDoc["Websocket"]["port"] = 80;
     configDoc["Mqtt"]["ip"] = "";
-    configDoc["Mqtt"]["port"] = 80;
-    configDoc["Mqtt"]["username"] = "";
-    configDoc["Mqtt"]["password"] = "";
+    configDoc["Mqtt"]["port"] = 1883;
+    configDoc["Mqtt"]["callback_topic"] = "superCube/callback";
+    configDoc["Mqtt"]["username"] = "SuperCube";
+    configDoc["Mqtt"]["password"] = "123456";
     configDoc["Mqtt"]["topic"] = "superCube/topic";
     configDoc["serverMode"] = "http";
     configDoc["light"].to<JsonArray>();

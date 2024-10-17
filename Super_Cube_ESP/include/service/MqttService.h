@@ -19,10 +19,14 @@ public:
                 String topic);
 
     void start();
+    std::unique_ptr<PubSubClient> mqttClient;
+
+    void loop();
 
 private:
     super_cube *superCube;
-    std::unique_ptr<PubSubClient> mqttClient;
+    Shell *shell;
+
     String server;
     int port;
     String clientId;
@@ -30,12 +34,11 @@ private:
     String password;
     String topic;
     WiFiClient espClient;
+    unsigned long previousMillis = 0;
+    const long interval = 5000;
+    bool ShouldReconnect = false;
 
-    void reconnect();
-
-    void callback(char *topic, byte *payload, unsigned int length);
-
-    void loop();
+    void handleMessage(char *topic, byte *payload, unsigned int length);
 
     void publishMessage(String message);
 };

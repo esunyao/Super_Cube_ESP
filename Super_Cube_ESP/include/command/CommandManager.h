@@ -30,7 +30,7 @@ public:
     super_cube *getSuperCube();
 
     String res;
-    std::unique_ptr<JsonDocument> jsonDoc;
+    JsonDocument jsonDoc;
 private:
     super_cube *superCube;
     bool httpMode = false;

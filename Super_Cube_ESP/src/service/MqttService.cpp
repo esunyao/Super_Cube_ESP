@@ -16,37 +16,35 @@ MqttService::MqttService(super_cube *superCube,
         clientId(clientId),
         username(username),
         password(password),
-        topic(topic) {}
+        topic(topic) { shell = new Shell(superCube, true); }
 
 void MqttService::start() {
     mqttClient = std::make_unique<PubSubClient>(espClient);
     mqttClient->setServer(server.c_str(), port);
     mqttClient->setCallback([this](char *topic, byte *payload, unsigned int length) {
-        this->callback(topic, payload, length);
+        this->handleMessage(topic, payload, length);
     });
 }
 
 void MqttService::loop() {
     if (!mqttClient->connected()) {
-        reconnect();
+        if (ShouldReconnect) {
+            unsigned long currentMillis = millis();
+            if (currentMillis - previousMillis >= interval) {
+                previousMillis = currentMillis;
+                if (mqttClient->connect(clientId.c_str(), username.c_str(), password.c_str())) {
+                    mqttClient->subscribe(topic.c_str());
+                    ShouldReconnect = false;
+                } else {
+                    Serial.print("failed, rc=");
+                    Serial.print(mqttClient->state());
+                    Serial.println(" try again in 5 seconds");
+                }
+            }
+        } else
+            ShouldReconnect = true;
     }
     mqttClient->loop();
-}
-
-void MqttService::reconnect() {
-    while (!mqttClient->connected()) {
-        Serial.print("Attempting MQTT connection...");
-
-        if (mqttClient->connect(clientId.c_str(), username.c_str(), password.c_str())) {
-            Serial.println("connected");
-            mqttClient->subscribe(topic.c_str());
-        } else {
-            Serial.print("failed, rc=");
-            Serial.print(mqttClient->state());
-            Serial.println(" try again in 5 seconds");
-            delay(5000);
-        }
-    }
 }
 
 void MqttService::publishMessage(String message) {
@@ -55,17 +53,27 @@ void MqttService::publishMessage(String message) {
     }
 }
 
-void MqttService::callback(char *topic, byte *payload, unsigned int length) {
-    Serial.print("Message arrived [");
-    Serial.print(topic);
-    Serial.print("] ");
-
-    String message;
+void MqttService::handleMessage(char *topic, byte *payload, unsigned int length) {
+    String requestBody;
     for (unsigned int i = 0; i < length; i++) {
-        message += (char) payload[i];
+        requestBody += (char) payload[i];
     }
-    Serial.println(message);
 
-    // You can handle the message here, for example:
-    // superCube->handleMessage(topic, message);
+    JsonDocument jsonDoc = JsonDocument();
+    DeserializationError error = deserializeJson(jsonDoc, requestBody);
+    superCube->debugln("[MqttServer] Get request from: ", topic);
+    if (!error) {
+        superCube->debugln("[MqttServer][", topic, "] ", jsonDoc.as<String>());
+        if (jsonDoc.operator[]("command").is<std::string>()) {
+            superCube->hdebugln("[MqttServer] Command: ", jsonDoc.operator[]("command").as<String>());
+            shell->setup();
+            shell->jsonDoc = jsonDoc;
+            superCube->command_registry->execute_command(shell,
+                                                         shell->jsonDoc.operator[]("command").as<std::string>());
+        }
+    } else {
+        superCube->mdebugln("[MqttServer] JSON deserialization failed: ");
+        superCube->mdebugln(error.c_str());
+        return;
+    }
 }

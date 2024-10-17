@@ -81,20 +81,19 @@ void HttpServer::handleCmdCommandExecution() {
 }
 
 void HttpServer::handleCommandExecution() {
-
-    std::unique_ptr<JsonDocument> jsonDoc = std::make_unique<JsonDocument>();
+    JsonDocument jsonDoc = JsonDocument();
     String requestBody = httpServer.arg("plain");
-    DeserializationError error = deserializeJson(*jsonDoc, requestBody);
+    DeserializationError error = deserializeJson(jsonDoc, requestBody);
     IPAddress clientIP = httpServer.client().remoteIP();
     superCube->debugln("[HttpServer] Get request from: ", clientIP.toString());
     if (!error) {
-        superCube->debugln("[HttpServer][", clientIP.toString(), "] ", jsonDoc->as<String>());
-        if (jsonDoc->operator[]("command").is<std::string>()) {
-            superCube->hdebugln("[HttpServer] Command: ", jsonDoc->operator[]("command").as<String>());
+        superCube->debugln("[HttpServer][", clientIP.toString(), "] ", jsonDoc.as<String>());
+        if (jsonDoc.operator[]("command").is<std::string>()) {
+            superCube->hdebugln("[HttpServer] Command: ", jsonDoc.operator[]("command").as<String>());
             shell->setup();
-            shell->jsonDoc = std::move(jsonDoc);
+            shell->jsonDoc = jsonDoc;
             superCube->command_registry->execute_command(shell,
-                                                         shell->jsonDoc->operator[]("command").as<std::string>());
+                                                         shell->jsonDoc.operator[]("command").as<std::string>());
         }
     } else {
         superCube->hdebugln("[HttpServer] JSON deserialization failed: ");
@@ -115,34 +114,34 @@ void HttpServer::commandRegister() {
                                 {2, D2},
                                 {3, D3},
                         };
-                        if (shelll->jsonDoc->operator[]("save").is<bool>())
-                            if (shelll->jsonDoc->operator[]("save").as<bool>()) {
-                                shelll->jsonDoc->remove("save");
+                        if (shelll->jsonDoc.operator[]("save").is<bool>())
+                            if (shelll->jsonDoc.operator[]("save").as<bool>()) {
+                                shelll->jsonDoc.remove("save");
                                 auto copiedDoc = std::make_unique<JsonDocument>();
-                                copiedDoc->set(*shelll->jsonDoc);
+                                copiedDoc->set(shelll->jsonDoc);
                                 shelll->getSuperCube()->config_manager->getConfig()["light"].as<JsonArray>().add(*copiedDoc);
                                 shelll->getSuperCube()->config_manager->saveConfig();
                             }
-                        if (shelll->jsonDoc->operator[]("presets").is<std::string>()) {
-                            JsonObject presets = shelll->getSuperCube()->config_manager->getConfig()["light_presets"][shelll->jsonDoc->operator[](
+                        if (shelll->jsonDoc.operator[]("presets").is<std::string>()) {
+                            JsonObject presets = shelll->getSuperCube()->config_manager->getConfig()["light_presets"][shelll->jsonDoc.operator[](
                                     "presets").as<std::string>()];
-                            shelll->jsonDoc->operator[]("r") = presets["r"];
-                            shelll->jsonDoc->operator[]("g") = presets["g"];
-                            shelll->jsonDoc->operator[]("b") = presets["b"];
-                            shelll->jsonDoc->operator[]("bright") = presets["bright"];
+                            shelll->jsonDoc.operator[]("r") = presets["r"];
+                            shelll->jsonDoc.operator[]("g") = presets["g"];
+                            shelll->jsonDoc.operator[]("b") = presets["b"];
+                            shelll->jsonDoc.operator[]("bright") = presets["bright"];
                         }
                         std::unique_ptr<Adafruit_NeoPixel> stripasd = std::make_unique<Adafruit_NeoPixel>(25,
-                                                                                                          pinMap[shelll->jsonDoc->operator[](
+                                                                                                          pinMap[shelll->jsonDoc.operator[](
                                                                                                                   "pin").as<int>()],
                                                                                                           NEO_GRB +
                                                                                                           NEO_KHZ800);
                         stripasd->begin();
-                        for (JsonVariant v: shelll->jsonDoc->operator[]("num").as<JsonArray>()) {
+                        for (JsonVariant v: shelll->jsonDoc.operator[]("num").as<JsonArray>()) {
                             if (v.as<int>())
                                 stripasd->setPixelColor(v.as<int>(),
-                                                        stripasd->Color(shelll->jsonDoc->operator[]("r").as<int>() | 0,
-                                                                        shelll->jsonDoc->operator[]("g").as<int>() | 0,
-                                                                        shelll->jsonDoc->operator[]("b").as<int>() |
+                                                        stripasd->Color(shelll->jsonDoc.operator[]("r").as<int>() | 0,
+                                                                        shelll->jsonDoc.operator[]("g").as<int>() | 0,
+                                                                        shelll->jsonDoc.operator[]("b").as<int>() |
                                                                         0));
                             else {
                                 std::regex pattern(R"((\d+)-(\d+))");
@@ -151,12 +150,12 @@ void HttpServer::commandRegister() {
                                 if (std::regex_search(str, matches, pattern))
                                     for (int i = std::stoi(matches[1].str()); i <= std::stoi(matches[2].str()); i++)
                                         stripasd->setPixelColor(i, stripasd->Color(
-                                                shelll->jsonDoc->operator[]("r").as<int>() | 0,
-                                                shelll->jsonDoc->operator[]("g").as<int>() | 0,
-                                                shelll->jsonDoc->operator[]("b").as<int>() | 0));
+                                                shelll->jsonDoc.operator[]("r").as<int>() | 0,
+                                                shelll->jsonDoc.operator[]("g").as<int>() | 0,
+                                                shelll->jsonDoc.operator[]("b").as<int>() | 0));
                             }
                         }
-                        stripasd->setBrightness(shelll->jsonDoc->operator[]("bright"));
+                        stripasd->setBrightness(shelll->jsonDoc.operator[]("bright"));
                         stripasd->show();
                     })));
     superCube->command_registry->register_command(

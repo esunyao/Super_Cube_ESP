@@ -10,10 +10,12 @@ LightHandler::LightHandler(super_cube *superCube_) : superCube(superCube_) {
 }
 
 void LightHandler::lightInitiation() {
-//    for (JsonVariant v : superCube->config_manager->getConfig()["light"].as<JsonArray>()) {
-//        shell->jsonDoc->clear();
-////        shell->jsonDoc->set(v.to<JsonDocument>())
-//        // shell->jsonDoc->operator[]("command") = "Server_NeoPixel";
-//        // superCube->command_registry->execute_command(shell, "Server_NeoPixel");
-//    }
+    for (JsonVariant v: superCube->config_manager->getConfig()["light"].as<JsonArray>()) {
+        shell->jsonDoc.clear();
+        std::string buffer;
+        serializeJson(v, buffer);
+        deserializeJson(shell->jsonDoc, buffer);
+        shell->jsonDoc["command"] = "Server_NeoPixel";
+        superCube->command_registry->execute_command(shell, "Server_NeoPixel");
+    }
 }

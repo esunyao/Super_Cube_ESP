@@ -11,6 +11,7 @@
 #include <main_.h>
 #include <HardwareSerial.h>
 
+
 super_cube::super_cube(HardwareSerial *serial) : command_registry(new CommandRegistry()),
                                                  serial(serial),
                                                  config_manager(&ConfigManager::getInstance(this)),
@@ -37,6 +38,8 @@ void super_cube::setup() {
     if (config_manager->getConfig()["DEBUG"])
         DEBUG_MODE_SET(true);
     if (config_manager->getConfig()["HTTPDEBUG"])
+        HTTP_DEBUG_MODE_SET(true);
+    if (config_manager->getConfig()["MQTTDEBUG"])
         HTTP_DEBUG_MODE_SET(true);
 
     debugln("[DEBUG] Loading Config Complete");
@@ -84,6 +87,9 @@ void super_cube::loop() {
     httpServer->handleClient();
     if (config_manager->getConfig()["serverMode"] == "Websocket" && webSocketService->webSocket != nullptr) {
         webSocketService->webSocket->loop();
+    }
+    if (config_manager->getConfig()["serverMode"] == "Mqtt" && mqttService->mqttClient != nullptr) {
+        mqttService->loop();
     }
 }
 
