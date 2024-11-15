@@ -81,13 +81,14 @@ void ConfigManager::createDefaultConfig() {
     configDoc["http"]["port"] = 80;
     configDoc["Websocket"]["ip"] = "";
     configDoc["Websocket"]["port"] = 80;
-    configDoc["Mqtt"]["ip"] = "";
+    configDoc["Mqtt"]["ip"] = "192.168.2.10";
     configDoc["Mqtt"]["port"] = 1883;
     configDoc["Mqtt"]["callback_topic"] = "superCube/callback";
     configDoc["Mqtt"]["username"] = "SuperCube";
     configDoc["Mqtt"]["password"] = "123456";
     configDoc["Mqtt"]["topic"] = "superCube/topic";
-    configDoc["serverMode"] = "http";
+    configDoc["Mqtt"]["autoReconnected"] = false;
+    configDoc["serverMode"] = "Mqtt";
     configDoc["light"].to<JsonArray>();
     configDoc["light_presets"].to<JsonObject>();
 }

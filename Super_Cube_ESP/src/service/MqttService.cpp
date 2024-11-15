@@ -26,8 +26,13 @@ void MqttService::start() {
     });
 }
 
+void MqttService::Connect_() {
+    if (mqttClient->connect(clientId.c_str(), username.c_str(), password.c_str()))
+        mqttClient->subscribe(topic.c_str());
+}
+
 void MqttService::loop() {
-    if (!mqttClient->connected()) {
+    if (!mqttClient->connected() && superCube->config_manager->getConfig()["Mqtt"]["autoReconnected"]   ) {
         if (ShouldReconnect) {
             unsigned long currentMillis = millis();
             if (currentMillis - previousMillis >= interval) {

@@ -23,6 +23,8 @@ public:
 
     void loop();
 
+    void Connect_();
+
 private:
     super_cube *superCube;
     Shell *shell;
@@ -41,6 +43,7 @@ private:
     void handleMessage(char *topic, byte *payload, unsigned int length);
 
     void publishMessage(String message);
+
 };
 
 #endif //SUPER_CUBE_ESP_MQTTSERVICE_H

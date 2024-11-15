@@ -113,6 +113,9 @@ void HttpServer::commandRegister() {
                                 {1, D1},
                                 {2, D2},
                                 {3, D3},
+                                {4, D4},
+                                {5, D5},
+                                {6, D6}
                         };
                         if (shelll->jsonDoc.operator[]("save").is<bool>())
                             if (shelll->jsonDoc.operator[]("save").as<bool>()) {

@@ -77,6 +77,7 @@ void super_cube::setup() {
         debugln("\n[DEBUG] Mode has been select as Mqtt");
         debugln("[DEBUG] Starting Mqtt Client...");
         mqttService->start();
+        mqttService->Connect_();
         debugln("[DEBUG] Mqtt Server Started, Listening...");
     }
 }
