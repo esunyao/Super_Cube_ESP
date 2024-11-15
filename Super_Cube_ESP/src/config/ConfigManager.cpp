@@ -91,6 +91,8 @@ void ConfigManager::createDefaultConfig() {
     configDoc["serverMode"] = "Mqtt";
     configDoc["light"].to<JsonArray>();
     configDoc["light_presets"].to<JsonObject>();
+    configDoc["Attitude"]["SCL"] = 6;
+    configDoc["Attitude"]["SDA"] = 7;
 }
 
 // Validate the config JSON structure

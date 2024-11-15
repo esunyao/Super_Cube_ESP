@@ -16,9 +16,11 @@ public:
                 String clientId,
                 String username,
                 String password,
-                String topic);
+                String topic,
+                String callback);
 
     void start();
+
     std::unique_ptr<PubSubClient> mqttClient;
 
     void loop();
@@ -35,6 +37,7 @@ private:
     String username;
     String password;
     String topic;
+    String callback;
     WiFiClient espClient;
     unsigned long previousMillis = 0;
     const long interval = 5000;
@@ -42,7 +45,7 @@ private:
 
     void handleMessage(char *topic, byte *payload, unsigned int length);
 
-    void publishMessage(String message);
+    void publishMessage(const String &message);
 
 };
 
