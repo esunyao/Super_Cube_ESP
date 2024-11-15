@@ -1,8 +1,9 @@
 {
-  "reset": true,
+  "reset": false,
   "DEBUG": false,
   "HTTPDEBUG": false,
-  "ID": "",
+  "MQTTDEBUG": false,
+  "ID": "ASF",
   "Internet": {
     "ssid": "inhand",
     "passwd": "33336666"
@@ -15,13 +16,19 @@
     "port": 80
   },
   "Mqtt": {
-    "ip": "",
-    "port": 80,
-    "username": "",
-    "password": "",
-    "topic": "cube/topic"
+    "ip": "192.168.2.10",
+    "port": 1883,
+    "callback_topic": "superCube/callback",
+    "username": "SuperCube",
+    "password": "123456",
+    "topic": "superCube/topic",
+    "autoReconnected": false
   },
-  "serverMode": "http",
+  "Attitude": {
+    "SCL": 6,
+    "SDA": 7
+  },
+  "serverMode": "Mqtt",
   "light": [],
   "light_presets": {}
 }

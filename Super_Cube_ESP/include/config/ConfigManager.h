@@ -65,6 +65,7 @@ private:
             {"http",           {"port"}},
             {"Websocket",      {"ip",   "port"}},
             {"Mqtt",           {"ip",   "port", "username", "password", "topic", "callback_topic", "autoReconnected"}},
+            {"Attitude",       {"SCL",  "SDA"}},
             {"serverMode",     {}},
             {"light",          {}},
             {"light_presets",  {}},

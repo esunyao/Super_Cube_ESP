@@ -21,6 +21,7 @@ super_cube::super_cube(HardwareSerial *serial) : command_registry(new CommandReg
     httpServer = nullptr;
     webSocketService = nullptr;
     mqttService = nullptr;
+    attitudeService = nullptr;
 }
 
 super_cube::~super_cube() {
@@ -30,6 +31,8 @@ super_cube::~super_cube() {
     delete config_manager, config_manager = nullptr;
     delete strip, strip = nullptr;
     delete httpServer, httpServer = nullptr;
+    delete mqttService, mqttService = nullptr;
+    delete attitudeService, attitudeService = nullptr;
 }
 
 void super_cube::setup() {
@@ -40,7 +43,7 @@ void super_cube::setup() {
     if (config_manager->getConfig()["HTTPDEBUG"])
         HTTP_DEBUG_MODE_SET(true);
     if (config_manager->getConfig()["MQTTDEBUG"])
-        HTTP_DEBUG_MODE_SET(true);
+        Mqtt_DEBUG_MODE_SET(true);
 
     debugln("[DEBUG] Loading Config Complete");
     httpServer = new HttpServer(this, static_cast<int>(config_manager->getConfig()["http"]["port"].as<int>()));
@@ -56,7 +59,8 @@ void super_cube::setup() {
                                   static_cast<String>(config_manager->getConfig()["ID"].as<String>()),
                                   static_cast<String>(config_manager->getConfig()["Mqtt"]["username"].as<String>()),
                                   static_cast<String>(config_manager->getConfig()["Mqtt"]["password"].as<String>()),
-                                  static_cast<String>(config_manager->getConfig()["Mqtt"]["topic"].as<String>()));
+                                  static_cast<String>(config_manager->getConfig()["Mqtt"]["topic"].as<String>()),
+                                  static_cast<String>(config_manager->getConfig()["Mqtt"]["callback_topic"].as<String>()));
     debugln("[DEBUG] Config: ", config_manager->getConfig().as<String>());
     _connectWiFi(config_manager->getConfig()["Internet"]["ssid"], config_manager->getConfig()["Internet"]["passwd"]);
     debugln("[DEBUG] Starting HTTP Server...");
@@ -80,6 +84,8 @@ void super_cube::setup() {
         mqttService->Connect_();
         debugln("[DEBUG] Mqtt Server Started, Listening...");
     }
+    attitudeService = new AttitudeService(this);
+    attitudeService->setup();
 }
 
 void super_cube::loop() {

@@ -16,6 +16,7 @@
 #include <ESP8266WebServer.h>
 #include <service/WebsocketService.h>
 #include <service/MqttService.h>
+#include <service/AttitudeService.h>
 
 class SerialHandler;
 
@@ -30,6 +31,8 @@ class MqttService;
 class WebSocketService;
 
 class LightHandler;
+
+class AttitudeService;
 
 class ConfigManager;
 
@@ -98,6 +101,7 @@ public:
     WebSocketService *webSocketService;
     MqttService *mqttService;
     LightHandler *lightHandler;
+    AttitudeService *attitudeService;
 protected:
     template<typename Func>
     void _running(Func func, bool running) {
