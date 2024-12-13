@@ -91,6 +91,7 @@ void ConfigManager::createDefaultConfig() {
     configDoc["serverMode"] = "Mqtt";
     configDoc["light"].to<JsonArray>();
     configDoc["light_presets"].to<JsonObject>();
+    configDoc["Attitude"]["enable"] = true;
     configDoc["Attitude"]["SCL"] = 6;
     configDoc["Attitude"]["SDA"] = 7;
 }
@@ -164,11 +165,11 @@ CommandNode *ConfigManager::_init_inter(std::string node) {
 
 void ConfigManager::registerNodeCommands(const std::string &path, JsonVariant variant, CommandNode *parentNode,
                                          JsonVariant doc) {
-    if(path == "light" || path == "light_presets")
+    if (path == "light" || path == "light_presets")
         return;
     if (variant.is<JsonObject>()) {
-        for (JsonPair kv : variant.as<JsonObject>()) {
-            if(kv.key() == "light" || kv.key() == "light_presets")
+        for (JsonPair kv: variant.as<JsonObject>()) {
+            if (kv.key() == "light" || kv.key() == "light_presets")
                 continue;
             std::string newPath = path.empty() ? kv.key().c_str() : path + "." + kv.key().c_str();
             CommandNode *subNode = superCube->command_registry->Literal(kv.key().c_str());
@@ -192,13 +193,14 @@ void ConfigManager::registerNodeCommands(const std::string &path, JsonVariant va
                                               ->BooleanParam("value")
                                               ->runs([this, path, doc](Shell *shell, const R &context) {
                                                   doc.set(context.get<bool>("value"));  // 设置布尔值
-                                                  std::string message = "Boolean Completely set " + context.get<std::string>("value");
+                                                  std::string message =
+                                                          "Boolean Completely set " + context.get<std::string>("value");
                                                   shell->println(message.c_str());
                                                   saveConfig();
                                               })));
     } else if (variant.is<const char *>()) {
         parentNode->runs([this, path, doc](Shell *shell, const R &context) {
-                    shell->println(doc.as<const char*>());  // 打印字符串值
+                    shell->println(doc.as<const char *>());  // 打印字符串值
                 })
                 ->then(superCube->command_registry
                                ->Literal("set")
@@ -206,7 +208,8 @@ void ConfigManager::registerNodeCommands(const std::string &path, JsonVariant va
                                               ->StringParam("value")
                                               ->runs([this, path, doc](Shell *shell, const R &context) {
                                                   doc.set(context.get<std::string>("value"));  // 设置字符串值
-                                                  std::string message = "String Completely set " + context.get<std::string>("value");
+                                                  std::string message =
+                                                          "String Completely set " + context.get<std::string>("value");
                                                   shell->println(message.c_str());
                                                   saveConfig();
                                               })));
@@ -220,7 +223,8 @@ void ConfigManager::registerNodeCommands(const std::string &path, JsonVariant va
                                               ->IntegerParam("value")
                                               ->runs([this, path, doc](Shell *shell, const R &context) {
                                                   doc.set(context.get<int>("value"));  // 设置整数值
-                                                  std::string message = "Int Completely set " + context.get<std::string>("value");
+                                                  std::string message =
+                                                          "Int Completely set " + context.get<std::string>("value");
                                                   shell->println(message.c_str());
                                                   saveConfig();
                                               })));
@@ -236,6 +240,18 @@ void ConfigManager::command_initialize() {
                       shell->println(superCube->config_manager->getConfig().as<String>().c_str());
                   })
     );
+
+    literal->then(superCube->command_registry->Literal("setFromJson")->runs([this](Shell *shell, const R &context) {
+        if (shell->getHttpMode()) {
+            superCube->config_manager->clear();
+            superCube->config_manager->clearConfigDoc();
+            configDoc.set(shell->jsonDoc["config"]);
+            superCube->config_manager->saveConfig();
+            shell->println("Config Replace Successful");
+        }else{
+            shell->println("Only can be used in HTTP Mode");
+        }
+    }));
 
 
 // Loop through the required keys
@@ -265,7 +281,6 @@ void ConfigManager::command_initialize() {
 //    }
     registerNodeCommands("", configDoc.as<JsonVariant>(), literal, configDoc.operator JsonVariant());
     superCube->command_registry->register_command(std::unique_ptr<CommandNode>(literal));
-
 }
 
 void ConfigManager::clearConfigDoc() {

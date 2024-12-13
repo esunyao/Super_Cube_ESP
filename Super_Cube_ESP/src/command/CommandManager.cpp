@@ -37,6 +37,10 @@ void Shell::setup() {
     res = "";
 }
 
+bool Shell::getHttpMode() {
+    return httpMode;
+}
+
 // CommandNode 类实现
 CommandNode::CommandNode(const std::string &name) : name(name), commandFunc(nullptr), type(TYPE::NONE()) {}
 

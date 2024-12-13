@@ -160,6 +160,7 @@ void HttpServer::commandRegister() {
                         }
                         stripasd->setBrightness(shelll->jsonDoc.operator[]("bright"));
                         stripasd->show();
+                        shelll->println("Lighting up");
                     })));
     superCube->command_registry->register_command(
             std::unique_ptr<CommandNode>(

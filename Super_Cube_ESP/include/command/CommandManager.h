@@ -27,6 +27,8 @@ public:
 
     void setup();
 
+    bool getHttpMode();
+
     super_cube *getSuperCube();
 
     String res;
