@@ -16,7 +16,7 @@ super_cube::super_cube(HardwareSerial *serial) : command_registry(new CommandReg
                                                  serial(serial),
                                                  config_manager(&ConfigManager::getInstance(this)),
                                                  serialHandler(new SerialHandler(this, this->serial)),
-                                                 lightHandler(new LightHandler(this)){
+                                                 lightHandler(new LightHandler(this)) {
     strip = nullptr;
     httpServer = nullptr;
     webSocketService = nullptr;
@@ -84,8 +84,10 @@ void super_cube::setup() {
         mqttService->Connect_();
         debugln("[DEBUG] Mqtt Server Started, Listening...");
     }
-    attitudeService = new AttitudeService(this);
-    attitudeService->setup();
+    if (config_manager->getConfig()["Attitude"]["enable"]) {
+        attitudeService = new AttitudeService(this);
+        attitudeService->setup();
+    }
 }
 
 void super_cube::loop() {
@@ -107,9 +109,10 @@ void super_cube::_command_register() {
                 EspClass::restart();
             })));
     command_registry->register_command(
-            std::unique_ptr<CommandNode>(command_registry->Literal("commandtree")->runs([](Shell *shell, const R &context) {
-                shell->getSuperCube()->command_registry->printCommandTree();
-            })));
+            std::unique_ptr<CommandNode>(
+                    command_registry->Literal("commandtree")->runs([](Shell *shell, const R &context) {
+                        shell->getSuperCube()->command_registry->printCommandTree();
+                    })));
 }
 
 void super_cube::_connectWiFi(const char *ssid, const char *password) {

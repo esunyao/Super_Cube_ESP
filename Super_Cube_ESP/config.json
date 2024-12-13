@@ -25,6 +25,7 @@
     "autoReconnected": false
   },
   "Attitude": {
+    "enable": true,
     "SCL": 6,
     "SDA": 7
   },
