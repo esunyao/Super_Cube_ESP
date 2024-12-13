@@ -100,6 +100,9 @@ void super_cube::loop() {
     if (config_manager->getConfig()["serverMode"] == "Mqtt" && mqttService->mqttClient != nullptr) {
         mqttService->loop();
     }
+    if (config_manager->getConfig()["Attitude"]["enable"]) {
+        attitudeService->update();
+    }
 }
 
 void super_cube::_command_register() {
