@@ -5,7 +5,6 @@
 #ifndef SUPER_CUBE_ESP_ATTITUDESERVICE_H
 #define SUPER_CUBE_ESP_ATTITUDESERVICE_H
 #include <super_cube.h>
-#include "utils/MPU6050.h"
 
 class AttitudeService {
 public:
@@ -16,7 +15,6 @@ public:
 
 private:
     super_cube *superCube;
-    MPU6050 accelgyro;
 };
 
 #endif //SUPER_CUBE_ESP_ATTITUDESERVICE_H

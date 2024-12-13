@@ -22,17 +22,17 @@ void AttitudeService::setup() {
 
     // 初始化设备
     superCube->serial->println("正在初始化 I2C 设备...");
-    accelgyro.initialize();
+//    accelgyro.initialize();
 
     // 验证连接
     superCube->serial->println("测试设备连接...");
-    superCube->serial->println(accelgyro.testConnection() ? "MPU6050 连接成功" : "MPU6050 连接失败");
+//    superCube->serial->println(accelgyro.testConnection() ? "MPU6050 连接成功" : "MPU6050 连接失败");
 }
 
 void AttitudeService::update() {
     // 从传感器读取数据
     int16_t ax, ay, az, gx, gy, gz;
-    accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+//    accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
 
     // 打印数据到串口
     superCube->serial->print("a/g:\t");
@@ -51,6 +51,6 @@ void AttitudeService::update() {
 }
 
 void AttitudeService::getMotion6(int16_t *ax, int16_t *ay, int16_t *az, int16_t *gx, int16_t *gy, int16_t *gz) {
-    accelgyro.getMotion6(ax, ay, az, gx, gy, gz);
+//    accelgyro.getMotion6(ax, ay, az, gx, gy, gz);
 }
 

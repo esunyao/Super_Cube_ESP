@@ -8,13 +8,6 @@
 #include <uuid/console.h>
 
 #include "Wire.h"
-#include "utils/I2Cdev.h"
-#include "utils/MPU6050.h"
-
-MPU6050 accelgyro;
-
-int16_t ax, ay, az;
-int16_t gx, gy, gz;
 
 #define LED_PIN 13
 bool blinkState = false;
