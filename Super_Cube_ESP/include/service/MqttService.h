@@ -50,7 +50,6 @@ private:
     void publishMessage(const String &message);
 
     void publishMessage(const String &message, String topic_pub);
-
 };
 
 #endif //SUPER_CUBE_ESP_MQTTSERVICE_H

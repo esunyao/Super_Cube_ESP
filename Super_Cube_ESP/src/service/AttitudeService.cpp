@@ -7,11 +7,9 @@
 #include "I2Cdev.h"
 #include <Arduino.h>
 
-AttitudeService *AttitudeService::instance = nullptr;
 
 AttitudeService::AttitudeService(super_cube *cube) : superCube(cube) {
     mpu = new MPU6050();
-    instance = this;
 }
 
 AttitudeService::~AttitudeService() {
