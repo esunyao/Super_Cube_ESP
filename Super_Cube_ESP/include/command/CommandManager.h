@@ -19,7 +19,7 @@ class Shell {
 public:
     Shell(super_cube *superCube);
 
-    Shell(super_cube *superCube, bool httpmode);
+    Shell(super_cube *superCube, bool httpmode, bool mqttMode);
 
     void println(const char *message);
 
@@ -36,6 +36,7 @@ public:
 private:
     super_cube *superCube;
     bool httpMode = false;
+    bool mqttMode = false;
 };
 
 class TYPE {

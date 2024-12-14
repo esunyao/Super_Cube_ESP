@@ -20,6 +20,7 @@ public:
 
     void commandRegister();
 
+    ESP8266WebServer httpServer;
 protected:
     template<typename Func>
     void _running(Func func, bool running) {
@@ -41,7 +42,6 @@ protected:
 
 private:
 
-    ESP8266WebServer httpServer;
     super_cube *superCube;
     Shell *shell;
 };

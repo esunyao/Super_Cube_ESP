@@ -19,6 +19,7 @@
     "ip": "192.168.2.10",
     "port": 1883,
     "callback_topic": "superCube/callback",
+    "attitude_topic": "superCube/attitude/",
     "username": "SuperCube",
     "password": "123456",
     "topic": "superCube/topic",

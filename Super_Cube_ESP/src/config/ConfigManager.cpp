@@ -84,6 +84,7 @@ void ConfigManager::createDefaultConfig() {
     configDoc["Mqtt"]["ip"] = "192.168.2.10";
     configDoc["Mqtt"]["port"] = 1883;
     configDoc["Mqtt"]["callback_topic"] = "superCube/callback";
+    configDoc["Mqtt"]["attitude_topic"] = "superCube/attitude/";
     configDoc["Mqtt"]["username"] = "SuperCube";
     configDoc["Mqtt"]["password"] = "123456";
     configDoc["Mqtt"]["topic"] = "superCube/topic";

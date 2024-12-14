@@ -13,14 +13,14 @@
 // 实现 Shell 类
 void Shell::println(const char *message) {
     // 打印消息到命令行
-    if(httpMode)
-        res += (String)message + '\n';
+    if (httpMode)
+        res += (String) message + '\n';
     superCube->serial->println(message);
 }
 
 void Shell::print(const char *message) {
     // 打印消息到命令行
-    if(httpMode)
+    if (httpMode)
         res += message;
     superCube->serial->print(message);
 }
@@ -31,7 +31,7 @@ super_cube *Shell::getSuperCube() {
 
 Shell::Shell(super_cube *superCube) : superCube(superCube) {}
 
-Shell::Shell(super_cube *superCube, bool httpmode) : superCube(superCube), httpMode(httpmode) {}
+Shell::Shell(super_cube *superCube, bool httpmode, bool mqttmode) : superCube(superCube), httpMode(httpmode), mqttMode(mqttmode) {}
 
 void Shell::setup() {
     res = "";
@@ -123,7 +123,7 @@ void CommandNode::printTree(int level) const {
     std::cout << name << std::endl;
 
     // Recursively print the children nodes
-    for (const auto& child : children) {
+    for (const auto &child: children) {
         child.second->printTree(level + 1);
     }
 }
@@ -132,7 +132,7 @@ void CommandNode::printTree(int level) const {
 
 
 void CommandRegistry::printCommandTree() const {
-    for (const auto& command : commands) {
+    for (const auto &command: commands) {
         command.second->printTree();
     }
 }

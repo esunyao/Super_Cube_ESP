@@ -38,16 +38,32 @@ void AttitudeService::setup() {
 
     // 验证连接
     superCube->serial->println("[MPU] 测试设备连接...");
-    superCube->serial->println(mpu->testConnection() ? "[MPU] MPU6050 连接成功" : "[MPU] MPU6050 连接失败");
+    superCube->serial->println(ConnectionTest() ? "[MPU] MPU6050 连接成功" : "[MPU] MPU6050 连接失败");
 
     /* 初始化并配置DMP*/
-    superCube->serial->println("[MPU] 初始化DMP...");
-    devStatus = mpu->dmpInitialize();
+    InitDmp();
 
     /* 在此处提供您的陀螺仪偏移量，按最小灵敏度缩放 */
     OffsetSet(0, 0, 0, 0, 0, 0);
 
     /* 确保它工作正常（如果是，则返回0） */
+    StartDmp();
+}
+bool AttitudeService::ConnectionTest(){
+    return mpu->testConnection();
+}
+bool AttitudeService::getReadyStatus(){
+    return DMPReady;
+}
+bool AttitudeService::getDevStatus(){
+    return devStatus;
+}
+uint8_t AttitudeService::InitDmp(){
+    superCube->serial->println("[MPU] 初始化DMP...");
+    devStatus = mpu->dmpInitialize();
+    return devStatus;
+}
+bool AttitudeService::StartDmp(){
     if (devStatus == 0) {
         mpu->CalibrateAccel(6);  // 校准时间：生成偏移量并校准我们的MPU6050
         mpu->CalibrateGyro(6);
@@ -58,26 +74,15 @@ void AttitudeService::setup() {
 
         DMPReady = true;
         packetSize = mpu->dmpGetFIFOPacketSize(); //获取预期的DMP数据包大小以供以后比较
+        return true;
     } else {
-        superCube->debugln(F("[MPU] DMP初始化失败（代码 "), devStatus == 1 ? F("初始化内存失败") : F("DMP配置更新失败"), F(")")); //打印错误代码
+        superCube->debugln(F("[MPU] DMP初始化失败（代码 "), devStatus == 1 ? F("初始化内存失败") : F("DMP配置更新失败"),
+                           F(")")); //打印错误代码
         // 1 = 初始内存加载失败
         // 2 = DMP配置更新失败
+        return false;
     }
 }
-
-void AttitudeService::update() {
-    float euler[3];         // [psi, theta, phi]    欧拉角容器
-    if (!DMPReady) return;
-    if (mpu->dmpGetCurrentFIFOPacket(FIFOBuffer)) {
-        mpu->dmpGetQuaternion(&q, FIFOBuffer);
-        mpu->dmpGetEuler(euler, &q);
-        superCube->debugln("[MPU] euler\t", euler[0] * 180/M_PI, "\t", euler[1] * 180/M_PI, "\t", euler[2] * 180/M_PI);
-    }
-}
-
-void AttitudeService::getMotion6(int16_t *ax, int16_t *ay, int16_t *az, int16_t *gx, int16_t *gy, int16_t *gz) {
-}
-
 void AttitudeService::OffsetSet(int16_t XG, int16_t YG, int16_t ZG, int16_t XA, int16_t YA, int16_t ZA) {
     /* 在此处提供您的陀螺仪偏移量，按最小灵敏度缩放 */
     mpu->setXGyroOffset(XG);
@@ -85,7 +90,81 @@ void AttitudeService::OffsetSet(int16_t XG, int16_t YG, int16_t ZG, int16_t XA, 
     mpu->setZGyroOffset(ZG);
     mpu->setXAccelOffset(XA);
     mpu->setYAccelOffset(YA);
-    instance = this;
     mpu->setZAccelOffset(ZA);
+}
+
+JsonDocument AttitudeService::GetData(bool out_put, const String& mode) {
+    JsonDocument jsdoc = JsonDocument();
+    std::map<String, int> modeMap = {
+            {"OUTPUT_READABLE_QUATERNION",   1},       // 四元数分量
+            {"OUTPUT_READABLE_EULER",        2},       // 欧拉角
+            {"OUTPUT_READABLE_YAWPITCHROLL", 3},       // 偏航/俯仰/滚转角
+            {"OUTPUT_READABLE_REALACCEL",    4},       // 输出去除重力后的加速度分量
+    };
+    Quaternion q;           // [w, x, y, z]         四元数容器
+    VectorInt16 aa;         // [x, y, z]            加速度传感器测量值
+    VectorInt16 aaReal;     // [x, y, z]            去除重力的加速度传感器测量值
+    VectorFloat gravity;    // [x, y, z]            重力向量
+    float euler[3];         // [psi, theta, phi]    欧拉角容器
+    float ypr[3];           // [yaw, pitch, roll]   偏航/俯仰/滚转容器和重力向量
+    if(mpu->dmpGetCurrentFIFOPacket(FIFOBuffer)) {
+        switch (modeMap[mode]) {
+            case 1:
+                mpu->dmpGetQuaternion(&q, FIFOBuffer);
+                jsdoc["quat"] = JsonDocument();
+                jsdoc["quat"]["w"] = q.w;
+                jsdoc["quat"]["x"] = q.x;
+                jsdoc["quat"]["y"] = q.y;
+                jsdoc["quat"]["z"] = q.z;
+                if (out_put)
+                    superCube->serial->println(
+                            "[MPU] quat\t" + String(q.w) + "\t" + String(q.x) + "\t" + String(q.y) + "\t" +
+                            String(q.z));
+                break;
+            case 2:
+                mpu->dmpGetQuaternion(&q, FIFOBuffer);
+                mpu->dmpGetEuler(euler, &q);
+                jsdoc["euler"] = JsonDocument();
+                jsdoc["euler"]["psi"] = euler[0] * 180 / M_PI;
+                jsdoc["euler"]["theta"] = euler[1] * 180 / M_PI;
+                jsdoc["euler"]["phi"] = euler[2] * 180 / M_PI;
+                superCube->serial->println("[MPU] 0: " + String(euler[0] * 180 / M_PI));
+                superCube->serial->println("[MPU] 1: " + String(euler[1] * 180 / M_PI));
+                superCube->serial->println("[MPU] 2: " + String(euler[2] * 180 / M_PI));
+                if (out_put)
+                    superCube->serial->println(
+                            "[MPU] euler\t" + String(euler[0] * 180 / M_PI) + "\t" + String(euler[1] * 180 / M_PI) +
+                            "\t" +
+                            String(euler[2] * 180 / M_PI));
+                break;
+            case 3:
+                mpu->dmpGetQuaternion(&q, FIFOBuffer);
+                mpu->dmpGetGravity(&gravity, &q);
+                mpu->dmpGetYawPitchRoll(ypr, &q, &gravity);
+                jsdoc["ypr"] = JsonDocument();
+                jsdoc["ypr"]["yaw"] = ypr[0] * 180 / M_PI;
+                jsdoc["ypr"]["pitch"] = ypr[1] * 180 / M_PI;
+                jsdoc["ypr"]["roll"] = ypr[2] * 180 / M_PI;
+                if (out_put)
+                    superCube->serial->println(
+                            "[MPU] ypr\t" + String(ypr[0] * 180 / M_PI) + "\t" + String(ypr[1] * 180 / M_PI) + "\t" +
+                            String(ypr[2] * 180 / M_PI));
+                break;
+            case 4:
+                mpu->dmpGetQuaternion(&q, FIFOBuffer);
+                mpu->dmpGetAccel(&aa, FIFOBuffer);
+                mpu->dmpGetGravity(&gravity, &q);
+                mpu->dmpGetLinearAccel(&aaReal, &aa, &gravity);
+                jsdoc["areal"] = JsonDocument();
+                jsdoc["areal"]["x"] = aaReal.x;
+                jsdoc["areal"]["y"] = aaReal.y;
+                jsdoc["areal"]["z"] = aaReal.z;
+                if (out_put)
+                    superCube->serial->println(
+                            "[MPU] areal\t" + String(aaReal.x) + "\t" + String(aaReal.y) + "\t" + String(aaReal.z));
+                break;
+        }
+    }
+    return jsdoc;
 }
 

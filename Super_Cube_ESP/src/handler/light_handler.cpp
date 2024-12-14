@@ -6,7 +6,7 @@
 
 
 LightHandler::LightHandler(super_cube *superCube_) : superCube(superCube_) {
-    shell = new Shell(superCube, true);
+    shell = new Shell(superCube, false, false);
 }
 
 void LightHandler::lightInitiation() {

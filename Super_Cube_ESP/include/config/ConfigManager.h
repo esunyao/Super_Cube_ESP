@@ -64,7 +64,7 @@ private:
             {"Internet",       {"ssid",   "passwd"}},
             {"http",           {"port"}},
             {"Websocket",      {"ip",     "port"}},
-            {"Mqtt",           {"ip",     "port", "username", "password", "topic", "callback_topic", "autoReconnected"}},
+            {"Mqtt",           {"ip",     "port", "username", "password", "topic", "callback_topic", "attitude_topic", "autoReconnected"}},
             {"Attitude",       {"enable", "SCL",  "SDA"}},
             {"serverMode",     {}},
             {"light",          {}},

@@ -6,7 +6,7 @@
 
 HttpServer::HttpServer(super_cube *superCube, int port) : httpServer(port),
                                                           superCube(superCube) {
-    shell = new Shell(superCube, true);
+    shell = new Shell(superCube, true, false);
 }
 
 void HttpServer::start() {
@@ -122,7 +122,8 @@ void HttpServer::commandRegister() {
                                 shelll->jsonDoc.remove("save");
                                 auto copiedDoc = std::make_unique<JsonDocument>();
                                 copiedDoc->set(shelll->jsonDoc);
-                                shelll->getSuperCube()->config_manager->getConfig()["light"].as<JsonArray>().add(*copiedDoc);
+                                shelll->getSuperCube()->config_manager->getConfig()["light"].as<JsonArray>().add(
+                                        *copiedDoc);
                                 shelll->getSuperCube()->config_manager->saveConfig();
                             }
                         if (shelll->jsonDoc.operator[]("presets").is<std::string>()) {

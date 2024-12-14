@@ -71,6 +71,10 @@ void super_cube::setup() {
                         shell->println(std::to_string(context.get<int>("value")).c_str());
                     })))));
     debugln("[DEBUG] HTTP Server Started, Listening...");
+    if (config_manager->getConfig()["Attitude"]["enable"]) {
+        attitudeService = new AttitudeService(this);
+        attitudeService->setup();
+    }
     if (config_manager->getConfig()["serverMode"] == "Websocket") {
         debugln("\n[DEBUG] Mode has been select as Websocket");
         debugln("[DEBUG] Starting Websocket Server...");
@@ -84,10 +88,6 @@ void super_cube::setup() {
         mqttService->Connect_();
         debugln("[DEBUG] Mqtt Server Started, Listening...");
     }
-    if (config_manager->getConfig()["Attitude"]["enable"]) {
-        attitudeService = new AttitudeService(this);
-        attitudeService->setup();
-    }
 }
 
 void super_cube::loop() {
@@ -99,9 +99,6 @@ void super_cube::loop() {
     }
     if (config_manager->getConfig()["serverMode"] == "Mqtt" && mqttService->mqttClient != nullptr) {
         mqttService->loop();
-    }
-    if (config_manager->getConfig()["Attitude"]["enable"]) {
-        attitudeService->update();
     }
 }
 
