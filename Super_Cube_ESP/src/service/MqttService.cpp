@@ -2,7 +2,11 @@
 // Created by Esuny on 2024/8/29.
 //
 #include <service/MqttService.h>
+#include <queue>
+#include <ArduinoJson.h>
 
+std::queue<char*> messageQueue;
+volatile bool isProcessing = false;
 
 MqttService::MqttService(super_cube *superCube,
                          String server,
@@ -59,6 +63,7 @@ void MqttService::loop() {
             ShouldReconnect = true;
     }
     mqttClient->loop();
+    processMessageQueue();
 }
 
 void MqttService::publishMessage(const String &message) {
@@ -98,10 +103,53 @@ void MqttService::publishMessage(const String &message, String topic_pub) {
 }
 
 void MqttService::handleMessage(char *topic, byte *payload, unsigned int length) {
-    superCube->mdebugln("[MqttServer] u Free heap before processing message: ", ESP.getFreeHeap());
-    StaticJsonDocument<1024> jsonDoc; // 调整容量以适应实际数据大小
-    DeserializationError error = deserializeJson(jsonDoc, payload, length);
-    superCube->debugln("[MqttServer] Get request from: ", topic);
+    if (isProcessing) {
+        superCube->mdebugln("[MqttServer] Previous message is still being processed. Discarding new message.");
+        return;
+    }
+    isProcessing = true;
+
+    // 将消息复制到本地缓冲区
+    char *message = (char *)malloc(length + 1);
+    if (message == nullptr) {
+        superCube->mdebugln("[MqttServer] Unable to allocate memory for message.");
+        isProcessing = false;
+        return;
+    }
+    memcpy(message, payload, length);
+    message[length] = '\0';
+
+    // 将消息添加到队列中
+    messageQueue.push(message);
+}
+
+void MqttService::processMessageQueue() {
+    while (!messageQueue.empty()) {
+        char *message = messageQueue.front();
+        messageQueue.pop();
+
+        // 处理消息
+        processMessage(message);
+
+        // 释放内存
+        free(message);
+    }
+    isProcessing = false;
+}
+
+void MqttService::processMessage(const char *message) {
+    static unsigned long lastProcessTime = 0;
+    unsigned long currentTime = millis();
+    const unsigned long minInterval = 100; // 最小处理间隔，单位：毫秒
+
+    if (currentTime - lastProcessTime < minInterval) {
+        superCube->mdebugln("[MqttServer] Message processing rate limited.");
+        return;
+    }
+    lastProcessTime = currentTime;
+
+    StaticJsonDocument<1024> jsonDoc;
+    DeserializationError error = deserializeJson(jsonDoc, message);
     if (!error) {
         superCube->debugln("[MqttServer][", topic, "] ", jsonDoc.as<String>());
         // 后续代码保持不变
@@ -125,9 +173,7 @@ void MqttService::handleMessage(char *topic, byte *payload, unsigned int length)
         }
     } else {
         superCube->mdebugln("[MqttServer] JSON deserialization failed: ", error.c_str());
-        return;
     }
-    superCube->mdebugln("[MqttServer] d Free heap after processing message: ", ESP.getFreeHeap());
 }
 
 void MqttService::commandRegister() {

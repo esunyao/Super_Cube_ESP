@@ -7,6 +7,7 @@
 
 #include <PubSubClient.h>
 #include <super_cube.h>
+#include <queue>
 
 class MqttService {
 public:
@@ -29,6 +30,11 @@ public:
 
     void commandRegister();
 
+    void processMessageQueue();
+
+    void publishMessage(const String &message);
+    void publishMessage(const String &message, String topic_pub);
+
 private:
     super_cube *superCube;
     Shell *shell;
@@ -46,10 +52,10 @@ private:
     bool ShouldReconnect = false;
 
     void handleMessage(char *topic, byte *payload, unsigned int length);
+    void processMessage(const char *message);
 
-    void publishMessage(const String &message);
-
-    void publishMessage(const String &message, String topic_pub);
+    std::queue<char*> messageQueue;
+    volatile bool isProcessing;
 };
 
 #endif //SUPER_CUBE_ESP_MQTTSERVICE_H
