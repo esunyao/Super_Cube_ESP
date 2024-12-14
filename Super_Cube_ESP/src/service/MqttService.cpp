@@ -102,6 +102,12 @@ void MqttService::handleMessage(char *topic, byte *payload, unsigned int length)
     superCube->debugln("[MqttServer] Get request from: ", topic);
     if (!error) {
         superCube->debugln("[MqttServer][", topic, "] ", jsonDoc.as<String>());
+        if (jsonDoc["devices"].is<std::string>())
+            if (!(jsonDoc["devices"].as<std::string>() ==
+                  superCube->config_manager->getConfig()["ID"].as<std::string>())) {
+                superCube->mdebugln("[MqttServer] Device ID not match, ignore.");
+                return;
+            }
         if (jsonDoc.operator[]("command").is<std::string>()) {
             superCube->mdebugln("[MqttServer] Command: ", jsonDoc.operator[]("command").as<String>());
             shell->setup();
