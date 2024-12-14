@@ -88,11 +88,11 @@ void ConfigManager::createDefaultConfig() {
     configDoc["Mqtt"]["username"] = "SuperCube";
     configDoc["Mqtt"]["password"] = "123456";
     configDoc["Mqtt"]["topic"] = "superCube/topic";
-    configDoc["Mqtt"]["autoReconnected"] = false;
+    configDoc["Mqtt"]["autoReconnected"] = true;
     configDoc["serverMode"] = "Mqtt";
     configDoc["light"].to<JsonArray>();
     configDoc["light_presets"].to<JsonObject>();
-    configDoc["Attitude"]["enable"] = true;
+    configDoc["Attitude"]["enable"] = false;
     configDoc["Attitude"]["SCL"] = 6;
     configDoc["Attitude"]["SDA"] = 7;
 }
@@ -243,7 +243,7 @@ void ConfigManager::command_initialize() {
     );
 
     literal->then(superCube->command_registry->Literal("setFromJson")->runs([this](Shell *shell, const R &context) {
-        if (shell->getHttpMode()) {
+        if (shell->getHttpMode() || shell->getMqttMode()) {
             superCube->config_manager->clear();
             superCube->config_manager->clearConfigDoc();
             configDoc.set(shell->jsonDoc["config"]);

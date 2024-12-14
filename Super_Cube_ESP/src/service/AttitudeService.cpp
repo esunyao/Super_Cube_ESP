@@ -100,6 +100,7 @@ JsonDocument AttitudeService::GetData(bool out_put, const String& mode) {
             {"OUTPUT_READABLE_EULER",        2},       // 欧拉角
             {"OUTPUT_READABLE_YAWPITCHROLL", 3},       // 偏航/俯仰/滚转角
             {"OUTPUT_READABLE_REALACCEL",    4},       // 输出去除重力后的加速度分量
+            {"OUTPUT_INIT", 5}
     };
     Quaternion q;           // [w, x, y, z]         四元数容器
     VectorInt16 aa;         // [x, y, z]            加速度传感器测量值
@@ -107,6 +108,8 @@ JsonDocument AttitudeService::GetData(bool out_put, const String& mode) {
     VectorFloat gravity;    // [x, y, z]            重力向量
     float euler[3];         // [psi, theta, phi]    欧拉角容器
     float ypr[3];           // [yaw, pitch, roll]   偏航/俯仰/滚转容器和重力向量
+    int16_t ax, ay, az;
+    int16_t gx, gy, gz;
     if(mpu->dmpGetCurrentFIFOPacket(FIFOBuffer)) {
         switch (modeMap[mode]) {
             case 1:
@@ -163,6 +166,15 @@ JsonDocument AttitudeService::GetData(bool out_put, const String& mode) {
                     superCube->serial->println(
                             "[MPU] areal\t" + String(aaReal.x) + "\t" + String(aaReal.y) + "\t" + String(aaReal.z));
                 break;
+            case 5:
+                mpu->getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+                jsdoc["motion"] = JsonDocument();
+                jsdoc["motion"]["ax"] = ax;
+                jsdoc["motion"]["ay"] = ay;
+                jsdoc["motion"]["az"] = az;
+                jsdoc["motion"]["gx"] = gx;
+                jsdoc["motion"]["gy"] = gy;
+                jsdoc["motion"]["gz"] = gz;
         }
     }
     return jsdoc;

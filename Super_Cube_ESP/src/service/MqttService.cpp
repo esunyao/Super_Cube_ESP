@@ -29,6 +29,7 @@ void MqttService::start() {
     mqttClient->setCallback([this](char *topic, byte *payload, unsigned int length) {
         this->handleMessage(topic, payload, length);
     });
+    mqttClient->setBufferSize(2048);
     commandRegister();
 }
 
@@ -72,7 +73,7 @@ void MqttService::publishMessage(const String &message, String topic_pub) {
         superCube->mdebugln("[MqttServer] MQTT client connected, publishing message.");
         superCube->mdebugln("[MqttServer] Publishing message: ", shell->res);
         superCube->mdebugln("[MqttServer] PublicTopic: ", topic_pub);
-        mqttClient->setBufferSize(1038);
+        mqttClient->setBufferSize(2048);
         const size_t maxPayloadSize = 1024;
         size_t messageLength = message.length();
         size_t offset = 0;

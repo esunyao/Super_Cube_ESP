@@ -13,14 +13,14 @@
 // 实现 Shell 类
 void Shell::println(const char *message) {
     // 打印消息到命令行
-    if (httpMode)
+    if (httpMode || mqttMode)
         res += (String) message + '\n';
     superCube->serial->println(message);
 }
 
 void Shell::print(const char *message) {
     // 打印消息到命令行
-    if (httpMode)
+    if (httpMode || mqttMode)
         res += message;
     superCube->serial->print(message);
 }
@@ -31,7 +31,8 @@ super_cube *Shell::getSuperCube() {
 
 Shell::Shell(super_cube *superCube) : superCube(superCube) {}
 
-Shell::Shell(super_cube *superCube, bool httpmode, bool mqttmode) : superCube(superCube), httpMode(httpmode), mqttMode(mqttmode) {}
+Shell::Shell(super_cube *superCube, bool httpmode, bool mqttmode) : superCube(superCube), httpMode(httpmode),
+                                                                    mqttMode(mqttmode) {}
 
 void Shell::setup() {
     res = "";
@@ -39,6 +40,10 @@ void Shell::setup() {
 
 bool Shell::getHttpMode() {
     return httpMode;
+}
+
+bool Shell::getMqttMode() {
+    return mqttMode;
 }
 
 // CommandNode 类实现

@@ -29,6 +29,8 @@ public:
 
     bool getHttpMode();
 
+    bool getMqttMode();
+
     super_cube *getSuperCube();
 
     String res;
