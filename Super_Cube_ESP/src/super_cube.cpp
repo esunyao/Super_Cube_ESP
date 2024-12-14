@@ -84,8 +84,8 @@ void super_cube::setup() {
         mqttService->Connect_();
         debugln("[DEBUG] Mqtt Server Started, Listening...");
     }
-    attitudeService = new AttitudeService(this);
-    attitudeService->setup();
+//    attitudeService = new AttitudeService(this);
+//    attitudeService->setup();
 }
 
 void super_cube::loop() {

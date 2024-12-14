@@ -87,7 +87,7 @@ void ConfigManager::createDefaultConfig() {
     configDoc["Mqtt"]["username"] = "SuperCube";
     configDoc["Mqtt"]["password"] = "123456";
     configDoc["Mqtt"]["topic"] = "superCube/topic";
-    configDoc["Mqtt"]["autoReconnected"] = false;
+    configDoc["Mqtt"]["autoReconnected"] = true;
     configDoc["serverMode"] = "Mqtt";
     configDoc["light"].to<JsonArray>();
     configDoc["light_presets"].to<JsonObject>();
