@@ -2,11 +2,7 @@
 // Created by Esuny on 2024/8/29.
 //
 #include <service/MqttService.h>
-#include <queue>
-#include <ArduinoJson.h>
 
-std::queue<char*> messageQueue;
-volatile bool isProcessing = false;
 
 MqttService::MqttService(super_cube *superCube,
                          String server,
@@ -33,6 +29,8 @@ void MqttService::start() {
     mqttClient->setCallback([this](char *topic, byte *payload, unsigned int length) {
         this->handleMessage(topic, payload, length);
     });
+    mqttClient->setBufferSize(2048);
+    commandRegister();
 }
 
 void MqttService::Connect_() {
@@ -52,6 +50,7 @@ void MqttService::loop() {
             if (currentMillis - previousMillis >= interval) {
                 previousMillis = currentMillis;
                 if (mqttClient->connect(clientId.c_str(), username.c_str(), password.c_str())) {
+                    mqttClient->subscribe(topic.c_str());
                     ShouldReconnect = false;
                 } else {
                     Serial.print("failed, rc=");
@@ -63,7 +62,6 @@ void MqttService::loop() {
             ShouldReconnect = true;
     }
     mqttClient->loop();
-    processMessageQueue();
 }
 
 void MqttService::publishMessage(const String &message) {
@@ -75,7 +73,7 @@ void MqttService::publishMessage(const String &message, String topic_pub) {
         superCube->mdebugln("[MqttServer] MQTT client connected, publishing message.");
         superCube->mdebugln("[MqttServer] Publishing message: ", shell->res);
         superCube->mdebugln("[MqttServer] PublicTopic: ", topic_pub);
-        mqttClient->setBufferSize(1038);
+        mqttClient->setBufferSize(2048);
         const size_t maxPayloadSize = 1024;
         size_t messageLength = message.length();
         size_t offset = 0;
@@ -103,76 +101,34 @@ void MqttService::publishMessage(const String &message, String topic_pub) {
 }
 
 void MqttService::handleMessage(char *topic, byte *payload, unsigned int length) {
-    if (isProcessing) {
-        superCube->mdebugln("[MqttServer] Previous message is still being processed. Discarding new message.");
-        return;
+    String requestBody;
+    for (unsigned int i = 0; i < length; i++) {
+        requestBody += (char) payload[i];
     }
-    isProcessing = true;
 
-    // 将消息复制到本地缓冲区
-    char *message = (char *)malloc(length + 1);
-    if (message == nullptr) {
-        superCube->mdebugln("[MqttServer] Unable to allocate memory for message.");
-        isProcessing = false;
-        return;
-    }
-    memcpy(message, payload, length);
-    message[length] = '\0';
-
-    // 将消息添加到队列中
-    messageQueue.push(message);
-}
-
-void MqttService::processMessageQueue() {
-    while (!messageQueue.empty()) {
-        char *message = messageQueue.front();
-        messageQueue.pop();
-
-        // 处理消息
-        processMessage(message);
-
-        // 释放内存
-        free(message);
-    }
-    isProcessing = false;
-}
-
-void MqttService::processMessage(const char *message) {
-    static unsigned long lastProcessTime = 0;
-    unsigned long currentTime = millis();
-    const unsigned long minInterval = 100; // 最小处理间隔，单位：毫秒
-
-    if (currentTime - lastProcessTime < minInterval) {
-        superCube->mdebugln("[MqttServer] Message processing rate limited.");
-        return;
-    }
-    lastProcessTime = currentTime;
-
-    StaticJsonDocument<1024> jsonDoc;
-    DeserializationError error = deserializeJson(jsonDoc, message);
+    JsonDocument jsonDoc = JsonDocument();
+    DeserializationError error = deserializeJson(jsonDoc, requestBody);
+    superCube->debugln("[MqttServer] Get request from: ", topic);
     if (!error) {
         superCube->debugln("[MqttServer][", topic, "] ", jsonDoc.as<String>());
-        // 后续代码保持不变
-        if (jsonDoc["devices"].is<const char *>()) {
-            const char *deviceId = jsonDoc["devices"];
-            const char *configId = superCube->config_manager->getConfig()["ID"];
-            if (strcmp(deviceId, configId) != 0) {
+        if (jsonDoc["devices"].is<std::string>())
+            if (!(jsonDoc["devices"].as<std::string>() ==
+                  superCube->config_manager->getConfig()["ID"].as<std::string>())) {
                 superCube->mdebugln("[MqttServer] Device ID not match, ignore.");
                 return;
             }
-        }
-        if (jsonDoc["command"].is<const char *>()) {
-            const char *command = jsonDoc["command"];
-            superCube->mdebugln("[MqttServer] Command: ", command);
+        if (jsonDoc.operator[]("command").is<std::string>()) {
+            superCube->mdebugln("[MqttServer] Command: ", jsonDoc.operator[]("command").as<String>());
             shell->setup();
             shell->jsonDoc = jsonDoc;
-            { superCube->command_registry->execute_command(shell, command); }
+            superCube->command_registry->execute_command(shell,
+                                                         shell->jsonDoc.operator[]("command").as<std::string>());
             publishMessage(shell->res);
-            shell->setup();
-            // jsonDoc.clear(); // StaticJsonDocument 不需要手动清理
         }
     } else {
-        superCube->mdebugln("[MqttServer] JSON deserialization failed: ", error.c_str());
+        superCube->mdebugln("[MqttServer] JSON deserialization failed: ");
+        superCube->mdebugln(error.c_str());
+        return;
     }
 }
 

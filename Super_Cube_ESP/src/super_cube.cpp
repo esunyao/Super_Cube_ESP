@@ -61,7 +61,6 @@ void super_cube::setup() {
                                   static_cast<String>(config_manager->getConfig()["Mqtt"]["password"].as<String>()),
                                   static_cast<String>(config_manager->getConfig()["Mqtt"]["topic"].as<String>()),
                                   static_cast<String>(config_manager->getConfig()["Mqtt"]["callback_topic"].as<String>()));
-    mqttService->commandRegister();
     debugln("[DEBUG] Config: ", config_manager->getConfig().as<String>());
     _connectWiFi(config_manager->getConfig()["Internet"]["ssid"], config_manager->getConfig()["Internet"]["passwd"]);
     debugln("[DEBUG] Starting HTTP Server...");
