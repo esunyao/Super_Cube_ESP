@@ -65,8 +65,8 @@ uint8_t AttitudeService::InitDmp(){
 }
 bool AttitudeService::StartDmp(){
     if (devStatus == 0) {
-        mpu->CalibrateAccel(6);  // 校准时间：生成偏移量并校准我们的MPU6050
-        mpu->CalibrateGyro(6);
+        mpu->CalibrateAccel(100);  // 校准时间：生成偏移量并校准我们的MPU6050
+        mpu->CalibrateGyro(100);
         superCube->serial->println("[MPU] 这些是活动偏移量: ");
         mpu->PrintActiveOffsets();
         superCube->serial->println("[MPU] 启用DMP...");   //打开DMP
