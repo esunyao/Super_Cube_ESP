@@ -6,14 +6,11 @@
 
 SerialHandler::SerialHandler(super_cube *cube, HardwareSerial *serial)
         : superCube(cube), serial(serial) {
-    shell = new Shell(cube);
 }
 
 void SerialHandler::start() {
     serial->begin(baud);
 }
-
-class Shell;
 
 void SerialHandler::handleSerial() {
     if (serial->available()) {

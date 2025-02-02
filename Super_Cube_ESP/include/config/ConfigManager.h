@@ -7,6 +7,7 @@
 
 #include <map>
 #include "ArduinoJson.h"
+#include <memory>
 #include <super_cube.h>
 
 class super_cube;
@@ -43,7 +44,8 @@ protected:
 
     CommandNode *_init_inter(std::string node);
 
-    CommandNode *_config_registry(std::string node);
+    template<typename T>
+    CommandNode *_init_generic(std::string node, std::function<void(JsonVariant, T)> setter);
 
 private:
     int eepromSize;
@@ -54,22 +56,23 @@ private:
 
     void clearConfigDoc();
 
-    // List of required keys and their sub-keys
-    const std::map<std::string, std::vector<std::string>> requiredKeys = {
-            {"reset",          {}},
-            {"HTTPDEBUG",      {}},
-            {"MQTTDEBUG",      {}},
-            {"DEBUG",          {}},
-            {"ID",             {}},
-            {"Internet",       {"ssid",   "passwd"}},
-            {"http",           {"port"}},
-            {"Websocket",      {"ip",     "port"}},
-            {"Mqtt",           {"ip",     "port", "username", "password", "topic", "callback_topic", "attitude_topic", "autoReconnected"}},
-            {"Attitude",       {"enable", "SCL",  "SDA"}},
-            {"serverMode",     {}},
-            {"light",          {}},
-            {"light_presets",  {}},
-    };
+    std::unique_ptr<std::map<std::string, std::vector<std::string>>> requiredKeys =
+            std::make_unique<std::map<std::string, std::vector<std::string>>>(
+                    std::map<std::string, std::vector<std::string>>{
+                            {"reset",         {}},
+                            {"HTTPDEBUG",     {}},
+                            {"MQTTDEBUG",     {}},
+                            {"DEBUG",         {}},
+                            {"ID",            {}},
+                            {"Internet",      {"ssid",   "passwd"}},
+                            {"http",          {"port"}},
+                            {"Websocket",     {"ip",     "port"}},
+                            {"Mqtt",          {"ip",     "port", "username", "password", "topic", "callback_topic", "attitude_topic", "autoReconnected"}},
+                            {"Attitude",      {"enable", "SCL",  "SDA"}},
+                            {"serverMode",    {}},
+                            {"light",         {}},
+                            {"light_presets", {}},
+                    });
 
     void registerNodeCommands(const std::string &path, JsonVariant variant, CommandNode *parentNode, JsonVariant doc);
 };

@@ -10,8 +10,6 @@
 
 class super_cube;
 
-class Shell;
-
 class SerialHandler {
 public:
 
@@ -25,7 +23,6 @@ public:
 
 private:
     super_cube *superCube;
-    Shell *shell;
     HardwareSerial *serial;
 };
 

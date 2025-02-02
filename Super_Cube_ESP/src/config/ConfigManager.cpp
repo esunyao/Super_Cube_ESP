@@ -4,6 +4,8 @@
 #include "config/ConfigManager.h"
 #include "main_.h"
 #include <EEPROM.h>
+#include <algorithm>
+#include <utility>
 #include "ArduinoJson.h"
 #include "utils/uuid_utils.h"
 
@@ -30,6 +32,7 @@ void ConfigManager::initialize() {
         createDefaultConfig();  // Create the default config
         saveConfig();  // Save it to EEPROM
     }
+    requiredKeys.reset();
 }
 
 // Clear the EEPROM
@@ -99,137 +102,82 @@ void ConfigManager::createDefaultConfig() {
 
 // Validate the config JSON structure
 bool ConfigManager::validateConfig() {
-    // Iterate through the required keys and check if they exist in the config
-    for (const auto &key: requiredKeys) {
-        if (!configDoc.containsKey(key.first)) {
-            return false;
-        }
-        for (const auto &subKey: key.second) {
-            if (!configDoc[key.first].containsKey(subKey)) {
-                return false;
-            }
-        }
-    }
+    return std::all_of(requiredKeys->begin(), requiredKeys->end(), [this](const auto &keyPair) {
+        const auto &key = keyPair.first;
+        const auto &subKeys = keyPair.second;
+        return !configDoc[key].isNull() && std::all_of(subKeys.begin(), subKeys.end(), [this, &key](const auto &subKey) {
+            return !configDoc[key][subKey].isNull();
+        });
+    });
+}
 
-    // Additional checks for specific value constraints can be added here
-
-    return true;
+template<typename T>
+CommandNode *ConfigManager::_init_generic(std::string node, std::function<void(JsonVariant, T)> setter) {
+    return superCube->command_registry
+            ->Literal(node)
+            ->runs([this, node](Shell *shell, const R &context) {
+                shell->println(configDoc[node].as<String>().c_str());
+            })
+            ->then(superCube->command_registry
+                           ->Literal("set")
+                           ->then(superCube->command_registry
+                                          ->Param<T>("value")
+                                          ->runs([this, node, setter](Shell *shell, const R &context) {
+                                              setter(configDoc[node], context.get<T>("value"));
+                                              saveConfig();
+                                          })
+                           )
+            );
 }
 
 CommandNode *ConfigManager::_init_stringer(std::string node) {
-    return superCube->command_registry
-            ->Literal(node.c_str())
-            ->runs([this, node](Shell *shell, const R &context) {
-                shell->println(configDoc[node].as<String>().c_str());
-            })
-            ->then(superCube->command_registry
-                           ->Literal("set")
-                           ->then(superCube->command_registry
-                                          ->StringParam("value")
-                                          ->runs([this, node](Shell *shell, const R &context) {
-                                              configDoc[node] = context.get<std::string>("value").c_str();
-                                              saveConfig();
-                                          })));
+    return _init_generic<std::string>(std::move(node), [](JsonVariant doc, std::string value) {
+        doc.set(value.c_str());
+    });
 }
 
 CommandNode *ConfigManager::_init_boolean(std::string node) {
-    return superCube->command_registry
-            ->Literal(node.c_str())
-            ->runs([this, node](Shell *shell, const R &context) {
-                shell->println(configDoc[node].as<String>().c_str());
-            })
-            ->then(superCube->command_registry
-                           ->Literal("set")
-                           ->then(superCube->command_registry
-                                          ->BooleanParam("value")
-                                          ->runs([this, node](Shell *shell, const R &context) {
-                                              configDoc[node] = context.get<boolean>("value");
-                                              saveConfig();
-                                          })));
+    return _init_generic<bool>(std::move(node), [](JsonVariant doc, bool value) {
+        doc.set(value);
+    });
 }
 
 CommandNode *ConfigManager::_init_inter(std::string node) {
-    return superCube->command_registry
-            ->Literal(node.c_str())
-            ->runs([this, node](Shell *shell, const R &context) {
-                shell->println(configDoc[node].as<String>().c_str());
-            })
-            ->then(superCube->command_registry
-                           ->Literal("set")
-                           ->then(superCube->command_registry
-                                          ->IntegerParam("value")
-                                          ->runs([this, node](Shell *shell, const R &context) {
-                                              configDoc[node] = context.get<int>("value");
-                                              saveConfig();
-                                          })));
+    return _init_generic<int>(std::move(node), [](JsonVariant doc, int value) {
+        doc.set(value);
+    });
 }
 
 void ConfigManager::registerNodeCommands(const std::string &path, JsonVariant variant, CommandNode *parentNode,
                                          JsonVariant doc) {
     if (path == "light" || path == "light_presets")
         return;
-    if (variant.is<JsonObject>()) {
-        for (JsonPair kv: variant.as<JsonObject>()) {
-            if (kv.key() == "light" || kv.key() == "light_presets")
-                continue;
-            std::string newPath = path.empty() ? kv.key().c_str() : path + "." + kv.key().c_str();
-            CommandNode *subNode = superCube->command_registry->Literal(kv.key().c_str());
-
-            // 获取当前 doc 的子成员，确保递归进入到下一层嵌套对象
-            JsonVariant nextDoc = doc[kv.key()];  // 使用 [] 访问子成员
-
-            // 如果该成员存在，递归调用下一层
-            if (!nextDoc.isNull()) {
-                registerNodeCommands(newPath, kv.value(), subNode, nextDoc);
-                parentNode->then(subNode);
-            }
-        }
-    } else if (variant.is<bool>()) {
-        parentNode->runs([this, path, doc](Shell *shell, const R &context) {
-                    shell->println(doc.as<bool>() ? "true" : "false");  // 打印布尔值
-                })
-                ->then(superCube->command_registry
-                               ->Literal("set")
-                               ->then(superCube->command_registry
-                                              ->BooleanParam("value")
-                                              ->runs([this, path, doc](Shell *shell, const R &context) {
-                                                  doc.set(context.get<bool>("value"));  // 设置布尔值
-                                                  std::string message =
-                                                          "Boolean Completely set " + context.get<std::string>("value");
-                                                  shell->println(message.c_str());
-                                                  saveConfig();
-                                              })));
+    if (variant.is<bool>()) {
+        parentNode->then(_init_boolean(path));
+        return;
     } else if (variant.is<const char *>()) {
-        parentNode->runs([this, path, doc](Shell *shell, const R &context) {
-                    shell->println(doc.as<const char *>());  // 打印字符串值
-                })
-                ->then(superCube->command_registry
-                               ->Literal("set")
-                               ->then(superCube->command_registry
-                                              ->StringParam("value")
-                                              ->runs([this, path, doc](Shell *shell, const R &context) {
-                                                  doc.set(context.get<std::string>("value"));  // 设置字符串值
-                                                  std::string message =
-                                                          "String Completely set " + context.get<std::string>("value");
-                                                  shell->println(message.c_str());
-                                                  saveConfig();
-                                              })));
+        parentNode->then(_init_stringer(path));
+        return;
     } else if (variant.is<int>()) {
-        parentNode->runs([this, path, doc](Shell *shell, const R &context) {
-                    shell->println(String(doc.as<int>()).c_str());  // 打印整数值
-                })
-                ->then(superCube->command_registry
-                               ->Literal("set")
-                               ->then(superCube->command_registry
-                                              ->IntegerParam("value")
-                                              ->runs([this, path, doc](Shell *shell, const R &context) {
-                                                  doc.set(context.get<int>("value"));  // 设置整数值
-                                                  std::string message =
-                                                          "Int Completely set " + context.get<std::string>("value");
-                                                  shell->println(message.c_str());
-                                                  saveConfig();
-                                              })));
+        parentNode->then(_init_inter(path));
+        return;
     }
+    for (JsonPair kv: variant.as<JsonObject>()) {
+        if (kv.key() == "light" || kv.key() == "light_presets")
+            continue;
+        std::string newPath = path.empty() ? kv.key().c_str() : path + "." + kv.key().c_str();
+        CommandNode *subNode = superCube->command_registry->Literal(kv.key().c_str());
+
+        // 获取当前 doc 的子成员，确保递归进入到下一层嵌套对象
+        JsonVariant nextDoc = doc[kv.key()];  // 使用 [] 访问子成员
+
+        // 如果该成员存在，递归调用下一层
+        if (!nextDoc.isNull()) {
+            registerNodeCommands(newPath, kv.value(), subNode, nextDoc);
+            parentNode->then(subNode);
+        }
+    }
+
 }
 
 
@@ -249,7 +197,7 @@ void ConfigManager::command_initialize() {
             configDoc.set(shell->jsonDoc["config"]);
             superCube->config_manager->saveConfig();
             shell->println("Config Replace Successful");
-        }else{
+        } else {
             shell->println("Only can be used in HTTP Mode");
         }
     }));

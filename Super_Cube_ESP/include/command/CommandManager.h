@@ -150,6 +150,20 @@ public:
         return new CommandNode(name, TYPE::INTEGER());
     }
 
+    template<typename T>
+    CommandNode *Param(const char *name) {
+        if constexpr (std::is_same<T, std::string>::value) {
+            return new CommandNode(name, TYPE::STRING());
+        } else if constexpr (std::is_same<T, bool>::value) {
+            return new CommandNode(name, TYPE::BOOLEAN());
+        } else if constexpr (std::is_integral<T>::value) {
+            return new CommandNode(name, TYPE::INTEGER());
+        } else {
+            static_assert(sizeof(T) == 0, "不支持的参数类型");
+        }
+    }
+
+
 private:
     std::map<std::string, std::unique_ptr<CommandNode>> commands;
 };

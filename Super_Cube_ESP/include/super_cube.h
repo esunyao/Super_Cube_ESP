@@ -6,6 +6,7 @@
 #define SUPER_CUBE_ESP_SUEPR_CUBE_H
 
 #include <HardwareSerial.h>
+#include <memory>
 #include "EEPROM.h"
 #include "config/ConfigManager.h"
 #include "command/CommandManager.h"
@@ -94,14 +95,13 @@ public:
     }
 
     CommandRegistry *command_registry;
-    Adafruit_NeoPixel *strip;
     HardwareSerial *serial;
     ConfigManager *config_manager;
-    HttpServer *httpServer;
-    WebSocketService *webSocketService;
-    MqttService *mqttService;
-    LightHandler *lightHandler;
-    AttitudeService *attitudeService;
+    std::unique_ptr<HttpServer> httpServer;
+    std::unique_ptr<WebSocketService> webSocketService;
+    std::unique_ptr<MqttService> mqttService;
+    std::unique_ptr<LightHandler> lightHandler;
+    std::unique_ptr<AttitudeService> attitudeService;
 protected:
     template<typename Func>
     void _running(Func func, bool running) {
@@ -111,7 +111,7 @@ protected:
 
     void _connectWiFi(const char *ssid, const char *password);
 
-    void _command_register();
+    void _command_register() const;
 
 private:
     bool DEBUG = false;

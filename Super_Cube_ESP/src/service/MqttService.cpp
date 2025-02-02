@@ -132,42 +132,5 @@ void MqttService::handleMessage(char *topic, byte *payload, unsigned int length)
 }
 
 void MqttService::commandRegister() {
-    superCube->command_registry->register_command(
-            std::unique_ptr<CommandNode>(superCube->command_registry->Literal("Server_posture")->then(
-                            superCube->command_registry->Literal("get")->runs([this](Shell *shelll, const R &context) {
-                                bool out_put = false;
-                                if (shelll->jsonDoc["out_put"].is<bool>())
-                                    out_put = shelll->jsonDoc["out_put"];
-                                JsonDocument data = shelll->getSuperCube()->attitudeService->GetData(out_put,
-                                                                                                     shelll->jsonDoc["mode"].as<String>());
-                                String dataStr;
-                                serializeJson(data, dataStr);
-                                if (shelll->getSuperCube())
-                                    shelll->getSuperCube()->mqttService->publishMessage(dataStr,
-                                                                                        shelll->getSuperCube()->config_manager->getConfig()["Mqtt"]["attitude_topic"].as<String>() +
-                                                                                        shelll->getSuperCube()->config_manager->getConfig()["ID"].as<String>());
-                                else
-                                    shelll->println("only Support Mqtt");
-                            }))
-                                                 ->then(superCube->command_registry->Literal("getDevStatus")->runs(
-                                                         [this](Shell *shelll, const R &context) {
-                                                             shelll->getSuperCube()->debugln("[MPU]",
-                                                                                             shelll->getSuperCube()->attitudeService->getDevStatus());
-                                                         }))
-                                                 ->then(superCube->command_registry->Literal("getReadyStatus")->runs(
-                                                         [this](Shell *shelll, const R &context) {
-                                                             shelll->getSuperCube()->debugln("[MPU]",
-                                                                                             shelll->getSuperCube()->attitudeService->getReadyStatus());
-                                                         }))
-                                                 ->then(superCube->command_registry->Literal("ConnectionTest")->runs(
-                                                         [this](Shell *shelll, const R &context) {
-                                                             shelll->getSuperCube()->debugln("[MPU]",
-                                                                                             shelll->getSuperCube()->attitudeService->ConnectionTest());
-                                                         }))
-                                                 ->then(superCube->command_registry->Literal("StartDmp")->runs(
-                                                         [this](Shell *shelll, const R &context) {
-                                                             shelll->getSuperCube()->debugln("[MPU]",
-                                                                                             shelll->getSuperCube()->attitudeService->StartDmp());
-                                                         }))
-            ));
+
 }

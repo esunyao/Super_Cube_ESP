@@ -17,7 +17,6 @@ public:
 
 private:
     super_cube *superCube;
-    Shell *shell;
 };
 
 

@@ -29,6 +29,8 @@ public:
 
     void commandRegister();
 
+    void publishMessage(const String &message, String topic_pub);
+
 private:
     super_cube *superCube;
     Shell *shell;
@@ -48,8 +50,6 @@ private:
     void handleMessage(char *topic, byte *payload, unsigned int length);
 
     void publishMessage(const String &message);
-
-    void publishMessage(const String &message, String topic_pub);
 
 };
 

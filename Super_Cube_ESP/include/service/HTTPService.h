@@ -18,8 +18,6 @@ public:
 
     void handleClient();
 
-    void commandRegister();
-
     ESP8266WebServer httpServer;
 protected:
     template<typename Func>
@@ -41,9 +39,7 @@ protected:
 
 
 private:
-
     super_cube *superCube;
-    Shell *shell;
 };
 
 
