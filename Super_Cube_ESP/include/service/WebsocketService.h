@@ -18,8 +18,6 @@ public:
 
     std::unique_ptr<WebSocketsClient> webSocket;
 
-    void clear();
-
     void stop();
 
 protected:

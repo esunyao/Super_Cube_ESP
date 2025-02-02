@@ -9,7 +9,6 @@ WebSocketService::WebSocketService(super_cube *superCube, String ip, int port) :
 }
 
 WebSocketService::~WebSocketService() {
-    clear();
 }
 
 void WebSocketService::handleWebSocketEvent(WStype_t type, uint8_t *payload, size_t length) {
