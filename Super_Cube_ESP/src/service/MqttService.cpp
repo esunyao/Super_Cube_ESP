@@ -20,7 +20,6 @@ MqttService::MqttService(super_cube *superCube,
         password(password),
         topic(topic),
         callback(callback) {
-    shell = new Shell(superCube, false, true);
 }
 
 void MqttService::start() {
@@ -70,7 +69,7 @@ void MqttService::publishMessage(const String &message) {
 void MqttService::publishMessage(const String &message, String topic_pub) {
     if (mqttClient->connected()) {
         superCube->mdebugln("[MqttServer] MQTT client connected, publishing message.");
-        superCube->mdebugln("[MqttServer] Publishing message: ", shell->res);
+        superCube->mdebugln("[MqttServer] Publishing message: ", message);
         superCube->mdebugln("[MqttServer] PublicTopic: ", topic_pub);
         mqttClient->setBufferSize(1034);
         const size_t maxPayloadSize = 1024;
@@ -118,11 +117,12 @@ void MqttService::handleMessage(char *topic, byte *payload, unsigned int length)
             }
         if (jsonDoc.operator[]("command").is<std::string>()) {
             superCube->mdebugln("[MqttServer] Command: ", jsonDoc.operator[]("command").as<String>());
+            std::unique_ptr<Shell> shell = std::make_unique<Shell>(superCube, false, true);
             shell->setup();
             shell->jsonDoc = jsonDoc;
-            superCube->command_registry->execute_command(shell,
-                                                         shell->jsonDoc.operator[]("command").as<std::string>());
-            publishMessage(shell->res);
+            publishMessage(superCube->command_registry->execute_command(std::move(shell),
+                                                                        jsonDoc.operator[](
+                                                                                "command").as<std::string>())->res);
         }
     } else {
         superCube->mdebugln("[MqttServer] JSON deserialization failed: ");

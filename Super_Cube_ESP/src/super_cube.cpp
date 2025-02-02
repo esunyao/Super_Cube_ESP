@@ -51,7 +51,7 @@ void super_cube::setup() {
     _connectWiFi(config_manager->getConfig()["Internet"]["ssid"], config_manager->getConfig()["Internet"]["passwd"]);
     command_registry->register_command(std::unique_ptr<CommandNode>(command_registry->Literal("asdf")->then(
             command_registry->Literal("f")->then(
-                    command_registry->IntegerParam("value")->runs([](Shell *shell, const R &context) {
+                    command_registry->IntegerParam("value")->runs([](std::unique_ptr<Shell> shell, const R &context) {
                         shell->println(std::to_string(context.get<int>("value")).c_str());
                     })))));
     if (config_manager->getConfig()["Attitude"]["enable"]) {
@@ -108,108 +108,113 @@ void super_cube::loop() {
 
 void super_cube::_command_register() const {
     command_registry->register_command(
-            std::unique_ptr<CommandNode>(command_registry->Literal("restart")->runs([](Shell *shell, const R &context) {
-                EspClass::restart();
-            })));
+            std::unique_ptr<CommandNode>(
+                    command_registry->Literal("restart")->runs([](std::unique_ptr<Shell> shell, const R &context) {
+                        EspClass::restart();
+                    })));
     command_registry->register_command(
             std::unique_ptr<CommandNode>(
-                    command_registry->Literal("commandtree")->runs([](Shell *shell, const R &context) {
+                    command_registry->Literal("commandtree")->runs([](std::unique_ptr<Shell> shell, const R &context) {
                         shell->getSuperCube()->command_registry->printCommandTree();
                     })));
     command_registry->register_command(
             std::unique_ptr<CommandNode>(
-                    command_registry->Literal("Server_NeoPixel")->runs([](Shell *shelll, const R &context) {
-                        // {"command": "Server_NeoPixel", "pin": 1, "r": 255, "g": 255, "b": 255, "bright": 255, "num": ["0-3"]}
-                        // {"command": "Server_NeoPixel", "presets": ""}
-                        std::map<int, const uint8_t> pinMap = {
-                                {1, D1},
-                                {2, D2},
-                                {3, D3},
-                                {4, D4},
-                                {5, D5},
-                                {6, D6}
-                        };
-                        if (shelll->jsonDoc.operator[]("save").is<bool>())
-                            if (shelll->jsonDoc.operator[]("save").as<bool>()) {
-                                shelll->jsonDoc.remove("save");
-                                auto copiedDoc = std::make_unique<JsonDocument>();
-                                copiedDoc->set(shelll->jsonDoc);
-                                shelll->getSuperCube()->config_manager->getConfig()["light"].as<JsonArray>().add(
-                                        *copiedDoc);
-                                shelll->getSuperCube()->config_manager->saveConfig();
-                            }
-                        if (shelll->jsonDoc.operator[]("presets").is<std::string>()) {
-                            JsonObject presets = shelll->getSuperCube()->config_manager->getConfig()["light_presets"][shelll->jsonDoc.operator[](
-                                    "presets").as<std::string>()];
-                            shelll->jsonDoc.operator[]("r") = presets["r"];
-                            shelll->jsonDoc.operator[]("g") = presets["g"];
-                            shelll->jsonDoc.operator[]("b") = presets["b"];
-                            shelll->jsonDoc.operator[]("bright") = presets["bright"];
-                        }
-                        std::unique_ptr<Adafruit_NeoPixel> stripasd = std::make_unique<Adafruit_NeoPixel>(25,
-                                                                                                          pinMap[shelll->jsonDoc.operator[](
-                                                                                                                  "pin").as<int>()],
-                                                                                                          NEO_GRB +
-                                                                                                          NEO_KHZ800);
-                        stripasd->begin();
-                        for (JsonVariant v: shelll->jsonDoc.operator[]("num").as<JsonArray>()) {
-                            if (v.as<int>())
-                                stripasd->setPixelColor(v.as<int>(),
-                                                        stripasd->Color(shelll->jsonDoc.operator[]("r").as<int>() | 0,
+                    command_registry->Literal("Server_NeoPixel")->runs(
+                            [](std::unique_ptr<Shell> shelll, const R &context) {
+                                // {"command": "Server_NeoPixel", "pin": 1, "r": 255, "g": 255, "b": 255, "bright": 255, "num": ["0-3"]}
+                                // {"command": "Server_NeoPixel", "presets": ""}
+                                std::map<int, const uint8_t> pinMap = {
+                                        {1, D1},
+                                        {2, D2},
+                                        {3, D3},
+                                        {4, D4},
+                                        {5, D5},
+                                        {6, D6}
+                                };
+                                if (shelll->jsonDoc.operator[]("save").is<bool>())
+                                    if (shelll->jsonDoc.operator[]("save").as<bool>()) {
+                                        shelll->jsonDoc.remove("save");
+                                        auto copiedDoc = std::make_unique<JsonDocument>();
+                                        copiedDoc->set(shelll->jsonDoc);
+                                        shelll->getSuperCube()->config_manager->getConfig()["light"].as<JsonArray>().add(
+                                                *copiedDoc);
+                                        shelll->getSuperCube()->config_manager->saveConfig();
+                                    }
+                                if (shelll->jsonDoc.operator[]("presets").is<std::string>()) {
+                                    JsonObject presets = shelll->getSuperCube()->config_manager->getConfig()["light_presets"][shelll->jsonDoc.operator[](
+                                            "presets").as<std::string>()];
+                                    shelll->jsonDoc.operator[]("r") = presets["r"];
+                                    shelll->jsonDoc.operator[]("g") = presets["g"];
+                                    shelll->jsonDoc.operator[]("b") = presets["b"];
+                                    shelll->jsonDoc.operator[]("bright") = presets["bright"];
+                                }
+                                std::unique_ptr<Adafruit_NeoPixel> stripasd = std::make_unique<Adafruit_NeoPixel>(25,
+                                                                                                                  pinMap[shelll->jsonDoc.operator[](
+                                                                                                                          "pin").as<int>()],
+                                                                                                                  NEO_GRB +
+                                                                                                                  NEO_KHZ800);
+                                stripasd->begin();
+                                for (JsonVariant v: shelll->jsonDoc.operator[]("num").as<JsonArray>()) {
+                                    if (v.as<int>())
+                                        stripasd->setPixelColor(v.as<int>(),
+                                                                stripasd->Color(
+                                                                        shelll->jsonDoc.operator[]("r").as<int>() | 0,
                                                                         shelll->jsonDoc.operator[]("g").as<int>() | 0,
                                                                         shelll->jsonDoc.operator[]("b").as<int>() |
                                                                         0));
-                            else {
-                                std::regex pattern(R"((\d+)-(\d+))");
-                                std::smatch matches;
-                                std::string str = v.as<String>().c_str();
-                                if (std::regex_search(str, matches, pattern))
-                                    for (int i = std::stoi(matches[1].str()); i <= std::stoi(matches[2].str()); i++)
-                                        stripasd->setPixelColor(i, stripasd->Color(
-                                                shelll->jsonDoc.operator[]("r").as<int>() | 0,
-                                                shelll->jsonDoc.operator[]("g").as<int>() | 0,
-                                                shelll->jsonDoc.operator[]("b").as<int>() | 0));
-                            }
-                        }
-                        stripasd->setBrightness(shelll->jsonDoc.operator[]("bright"));
-                        stripasd->show();
-                        shelll->println("Lighting up");
-                        stripasd.reset();
-                    })));
+                                    else {
+                                        std::regex pattern(R"((\d+)-(\d+))");
+                                        std::smatch matches;
+                                        std::string str = v.as<String>().c_str();
+                                        if (std::regex_search(str, matches, pattern))
+                                            for (int i = std::stoi(matches[1].str());
+                                                 i <= std::stoi(matches[2].str()); i++)
+                                                stripasd->setPixelColor(i, stripasd->Color(
+                                                        shelll->jsonDoc.operator[]("r").as<int>() | 0,
+                                                        shelll->jsonDoc.operator[]("g").as<int>() | 0,
+                                                        shelll->jsonDoc.operator[]("b").as<int>() | 0));
+                                    }
+                                }
+                                stripasd->setBrightness(shelll->jsonDoc.operator[]("bright"));
+                                stripasd->show();
+                                shelll->println("Lighting up");
+                                stripasd.reset();
+                            })));
     command_registry->register_command(
             std::unique_ptr<CommandNode>(command_registry->Literal("Server_posture")->then(
-                            command_registry->Literal("get")->runs([this](Shell *shelll, const R &context) {
-                                bool out_put = false;
-                                if (shelll->jsonDoc["out_put"].is<bool>())
-                                    out_put = shelll->jsonDoc["out_put"];
-                                JsonDocument data = shelll->getSuperCube()->attitudeService->GetData(out_put,
-                                                                                                     shelll->jsonDoc["mode"].as<String>());
-                                String dataStr;
-                                serializeJson(data, dataStr);
-                                if (shelll->getSuperCube())
-                                    shelll->getSuperCube()->mqttService->publishMessage(dataStr,
-                                                                                        shelll->getSuperCube()->config_manager->getConfig()["Mqtt"]["attitude_topic"].as<String>() +
-                                                                                        shelll->getSuperCube()->config_manager->getConfig()["ID"].as<String>());
-                                else
-                                    shelll->println("only Support Mqtt");
-                            }))
+                            command_registry->Literal("get")->runs(
+                                    [this](std::unique_ptr<Shell> shelll, const R &context) {
+                                        bool out_put = false;
+                                        if (shelll->jsonDoc["out_put"].is<bool>())
+                                            out_put = shelll->jsonDoc["out_put"];
+                                        JsonDocument data = shelll->getSuperCube()->attitudeService->GetData(out_put,
+                                                                                                             shelll->jsonDoc["mode"].as<String>());
+                                        String dataStr;
+                                        serializeJson(data, dataStr);
+                                        if (shelll->getSuperCube())
+                                            shelll->getSuperCube()->mqttService->publishMessage(dataStr,
+                                                                                                shelll->getSuperCube()->config_manager->getConfig()["Mqtt"]["attitude_topic"].as<String>() +
+                                                                                                shelll->getSuperCube()->config_manager->getConfig()["ID"].as<String>());
+                                        else
+                                            shelll->println("only Support Mqtt");
+                                    }))
                                                  ->then(command_registry->Literal("getDevStatus")->runs(
-                                                         [this](Shell *shelll, const R &context) {
+                                                         [this](std::unique_ptr<Shell> shelll, const R &context) {
                                                              shelll->getSuperCube()->debugln("[MPU]",
                                                                                              shelll->getSuperCube()->attitudeService->getDevStatus());
                                                          }))
                                                  ->then(command_registry->Literal("getReadyStatus")->runs(
-                                                         [this](Shell *shelll, const R &context) {
+                                                         [this](std::unique_ptr<Shell> shelll, const R &context) {
                                                              shelll->getSuperCube()->debugln("[MPU]",
                                                                                              shelll->getSuperCube()->attitudeService->getReadyStatus());
                                                          }))
                                                  ->then(command_registry->Literal("ConnectionTest")->runs(
-                                                         [this](Shell *shelll, const R &context) {
+                                                         [this](std::unique_ptr<Shell> shelll, const R &context) {
                                                              shelll->getSuperCube()->debugln("[MPU]",
                                                                                              shelll->getSuperCube()->attitudeService->ConnectionTest());
                                                          }))
                                                  ->then(command_registry->Literal("StartDmp")->runs(
-                                                         [this](Shell *shelll, const R &context) {
+                                                         [this](std::unique_ptr<Shell> shelll, const R &context) {
                                                              shelll->getSuperCube()->debugln("[MPU]",
                                                                                              shelll->getSuperCube()->attitudeService->StartDmp());
                                                          }))

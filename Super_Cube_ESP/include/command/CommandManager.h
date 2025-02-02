@@ -100,7 +100,7 @@ public:
 class CommandNode {
 public:
 
-    using CommandFunction = std::function<void(Shell *, const R &)>;
+    using CommandFunction = std::function<void(std::unique_ptr<Shell>, const R &)>;
 
     explicit CommandNode(const std::string &name);
 
@@ -112,7 +112,7 @@ public:
 
     const CommandNode *find_node(const std::vector<std::string> &path, R &context) const;
 
-    void execute(Shell *shell, const R &context) const;
+    void execute(std::unique_ptr<Shell> shell, const R &context) const;
 
     const std::string &get_name() const;
 
@@ -129,7 +129,7 @@ class CommandRegistry {
 public:
     void register_command(std::unique_ptr<CommandNode> root);
 
-    void execute_command(Shell *shell, const std::string &input) const;
+    std::unique_ptr<Shell> execute_command(std::unique_ptr<Shell> shell, const std::string &input) const;
 
     void printCommandTree() const;
 

@@ -105,9 +105,9 @@ const CommandNode *CommandNode::find_node(const std::vector<std::string> &path, 
 
 
 void
-CommandNode::execute(Shell *shell, const R &context) const {
+CommandNode::execute(std::unique_ptr<Shell> shell, const R &context) const {
     if (commandFunc) {
-        commandFunc(shell, context);
+        commandFunc(std::move(shell), context);
     } else {
         shell->println("Error: No function to execute.");
     }
@@ -146,7 +146,7 @@ void CommandRegistry::register_command(std::unique_ptr<CommandNode> root) {
     commands[root->get_name()] = std::move(root);
 }
 
-void CommandRegistry::execute_command(Shell *shell, const std::string &input) const {
+std::unique_ptr<Shell> CommandRegistry::execute_command(std::unique_ptr<Shell> shell, const std::string &input) const {
     std::istringstream iss(input);
     std::vector<std::string> tokens;
     std::string token;
@@ -163,7 +163,7 @@ void CommandRegistry::execute_command(Shell *shell, const std::string &input) co
             const CommandNode *node = it->second->find_node(subPath, context);
 
             if (node) {
-                node->execute(shell, context);
+                node->execute(std::move(shell), context);
             } else {
                 shell->println("Error: Command not found or invalid parameters.");
             }
@@ -171,4 +171,5 @@ void CommandRegistry::execute_command(Shell *shell, const std::string &input) co
             shell->println("Error: Command not found.");
         }
     }
+    return std::move(shell);
 }

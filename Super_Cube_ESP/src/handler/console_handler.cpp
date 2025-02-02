@@ -35,7 +35,7 @@ void SerialHandler::handleSerial() {
 //            for (int i = 1; i < tokenCount; ++i) {
 //                args.push_back(tokens[i].c_str());
 //            }
-        superCube->command_registry->execute_command(shell, std::string(input.c_str()));
+        superCube->command_registry->execute_command(std::make_unique<Shell>(superCube), std::string(input.c_str()));
     }
 }
 

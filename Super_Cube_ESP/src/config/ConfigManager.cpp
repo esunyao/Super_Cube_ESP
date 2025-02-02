@@ -105,9 +105,10 @@ bool ConfigManager::validateConfig() {
     return std::all_of(requiredKeys->begin(), requiredKeys->end(), [this](const auto &keyPair) {
         const auto &key = keyPair.first;
         const auto &subKeys = keyPair.second;
-        return !configDoc[key].isNull() && std::all_of(subKeys.begin(), subKeys.end(), [this, &key](const auto &subKey) {
-            return !configDoc[key][subKey].isNull();
-        });
+        return !configDoc[key].isNull() &&
+               std::all_of(subKeys.begin(), subKeys.end(), [this, &key](const auto &subKey) {
+                   return !configDoc[key][subKey].isNull();
+               });
     });
 }
 
@@ -115,14 +116,14 @@ template<typename T>
 CommandNode *ConfigManager::_init_generic(std::string node, std::function<void(JsonVariant, T)> setter) {
     return superCube->command_registry
             ->Literal(node)
-            ->runs([this, node](Shell *shell, const R &context) {
+            ->runs([this, node](std::unique_ptr<Shell> shell, const R &context) {
                 shell->println(configDoc[node].as<String>().c_str());
             })
             ->then(superCube->command_registry
                            ->Literal("set")
                            ->then(superCube->command_registry
                                           ->Param<T>("value")
-                                          ->runs([this, node, setter](Shell *shell, const R &context) {
+                                          ->runs([this, node, setter](std::unique_ptr<Shell> shell, const R &context) {
                                               setter(configDoc[node], context.get<T>("value"));
                                               saveConfig();
                                           })
@@ -185,22 +186,24 @@ void ConfigManager::command_initialize() {
     // Assuming you have included the necessary libraries and defined CommandNode, Shell, R, etc.
 
     CommandNode *literal = superCube->command_registry->Literal("config");
-    literal->then(superCube->command_registry->Literal("get")->runs([this](Shell *shell, const R &context) {
-                      shell->println(superCube->config_manager->getConfig().as<String>().c_str());
-                  })
+    literal->then(
+            superCube->command_registry->Literal("get")->runs([this](std::unique_ptr<Shell> shell, const R &context) {
+                shell->println(superCube->config_manager->getConfig().as<String>().c_str());
+            })
     );
 
-    literal->then(superCube->command_registry->Literal("setFromJson")->runs([this](Shell *shell, const R &context) {
-        if (shell->getHttpMode() || shell->getMqttMode()) {
-            superCube->config_manager->clear();
-            superCube->config_manager->clearConfigDoc();
-            configDoc.set(shell->jsonDoc["config"]);
-            superCube->config_manager->saveConfig();
-            shell->println("Config Replace Successful");
-        } else {
-            shell->println("Only can be used in HTTP Mode");
-        }
-    }));
+    literal->then(superCube->command_registry->Literal("setFromJson")->runs(
+            [this](std::unique_ptr<Shell> shell, const R &context) {
+                if (shell->getHttpMode() || shell->getMqttMode()) {
+                    superCube->config_manager->clear();
+                    superCube->config_manager->clearConfigDoc();
+                    configDoc.set(shell->jsonDoc["config"]);
+                    superCube->config_manager->saveConfig();
+                    shell->println("Config Replace Successful");
+                } else {
+                    shell->println("Only can be used in HTTP Mode");
+                }
+            }));
 
 
 // Loop through the required keys

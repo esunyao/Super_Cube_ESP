@@ -33,7 +33,6 @@ public:
 
 private:
     super_cube *superCube;
-    Shell *shell;
 
     String server;
     int port;

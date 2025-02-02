@@ -6,7 +6,6 @@
 
 HttpServer::HttpServer(super_cube *superCube, int port) : httpServer(port),
                                                           superCube(superCube) {
-    shell = new Shell(superCube, true, false);
 }
 
 void HttpServer::start() {
@@ -68,9 +67,9 @@ void HttpServer::handleCmdCommandExecution() {
         superCube->debugln("[HttpServer][", clientIP.toString(), "] ", jsonDoc->as<String>());
         if (jsonDoc->operator[]("command").is<std::string>()) {
             superCube->hdebugln("[HttpServer] Command: ", jsonDoc->operator[]("command").as<String>());
+            std::unique_ptr<Shell> shell = std::make_unique<Shell>(superCube, true, false);
             shell->setup();
-            superCube->command_registry->execute_command(shell, jsonDoc->operator[]("command").as<std::string>());
-            httpServer.send(200, "application/json", shell->res);
+            httpServer.send(200, "application/json", superCube->command_registry->execute_command(std::move(shell), jsonDoc->operator[]("command").as<std::string>())->res);
         }
     } else {
         superCube->hdebugln("[HttpServer] JSON deserialization failed: ");
@@ -81,24 +80,27 @@ void HttpServer::handleCmdCommandExecution() {
 }
 
 void HttpServer::handleCommandExecution() {
-    JsonDocument jsonDoc = JsonDocument();
-    String requestBody = httpServer.arg("plain");
-    DeserializationError error = deserializeJson(jsonDoc, requestBody);
-    IPAddress clientIP = httpServer.client().remoteIP();
-    superCube->debugln("[HttpServer] Get request from: ", clientIP.toString());
-    if (!error) {
-        superCube->debugln("[HttpServer][", clientIP.toString(), "] ", jsonDoc.as<String>());
-        if (jsonDoc.operator[]("command").is<std::string>()) {
-            superCube->hdebugln("[HttpServer] Command: ", jsonDoc.operator[]("command").as<String>());
-            shell->setup();
-            shell->jsonDoc = jsonDoc;
-            superCube->command_registry->execute_command(shell,
-                                                         shell->jsonDoc.operator[]("command").as<std::string>());
+    {
+        JsonDocument jsonDoc = JsonDocument();
+        String requestBody = httpServer.arg("plain");
+        DeserializationError error = deserializeJson(jsonDoc, requestBody);
+        IPAddress clientIP = httpServer.client().remoteIP();
+        superCube->debugln("[HttpServer] Get request from: ", clientIP.toString());
+        if (!error) {
+            superCube->debugln("[HttpServer][", clientIP.toString(), "] ", jsonDoc.as<String>());
+            if (jsonDoc.operator[]("command").is<std::string>()) {
+                superCube->hdebugln("[HttpServer] Command: ", jsonDoc.operator[]("command").as<String>());
+                std::unique_ptr<Shell> shell = std::make_unique<Shell>(superCube, true, false);
+                shell->setup();
+                shell->jsonDoc = jsonDoc;
+                superCube->command_registry->execute_command(std::move(shell),
+                                                             jsonDoc.operator[]("command").as<std::string>()).reset();
+            }
+        } else {
+            superCube->hdebugln("[HttpServer] JSON deserialization failed: ");
+            superCube->hdebugln(error.c_str());
+            httpServer.send(400, "application/json", R"({"error":"Invalid JSON"})");
+            return;
         }
-    } else {
-        superCube->hdebugln("[HttpServer] JSON deserialization failed: ");
-        superCube->hdebugln(error.c_str());
-        httpServer.send(400, "application/json", R"({"error":"Invalid JSON"})");
-        return;
     }
 }
