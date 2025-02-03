@@ -48,7 +48,7 @@ void super_cube::setup() {
     _command_register();
     lightHandler->lightInitiation();
     lightHandler.reset();
-    debugln("[DEBUG] Config: ", config_manager->getConfig().as<String>());
+    debugln("[DEBUG] Config: ", config_manager->toString().c_str());
     _connectWiFi(config_manager->getConfig()["Internet"]["ssid"], config_manager->getConfig()["Internet"]["passwd"]);
     command_registry->register_command(std::unique_ptr<CommandNode>(command_registry->Literal("asdf")->then(
             command_registry->Literal("f")->then(
@@ -193,12 +193,12 @@ void super_cube::_command_register() const {
                                         shelll->getSuperCube()->config_manager->saveConfig();
                                     }
                                 if (shelll->jsonDoc.operator[]("presets").is<std::string>()) {
-                                    JsonObject presets = shelll->getSuperCube()->config_manager->getConfig()["light_presets"][shelll->jsonDoc.operator[](
+                                    ConfigValue presets = shelll->getSuperCube()->config_manager->getConfig()["light_presets"][shelll->jsonDoc.operator[](
                                             "presets").as<std::string>()];
-                                    shelll->jsonDoc.operator[]("r") = presets["r"];
-                                    shelll->jsonDoc.operator[]("g") = presets["g"];
-                                    shelll->jsonDoc.operator[]("b") = presets["b"];
-                                    shelll->jsonDoc.operator[]("bright") = presets["bright"];
+                                    shelll->jsonDoc.operator[]("r") = presets["r"].as<int>();
+                                    shelll->jsonDoc.operator[]("g") = presets["g"].as<int>();
+                                    shelll->jsonDoc.operator[]("b") = presets["b"].as<int>();
+                                    shelll->jsonDoc.operator[]("bright") = presets["bright"].as<int>();
                                 }
                                 std::unique_ptr<Adafruit_NeoPixel> stripasd = std::make_unique<Adafruit_NeoPixel>(25,
                                                                                                                   pinMap[shelll->jsonDoc.operator[](

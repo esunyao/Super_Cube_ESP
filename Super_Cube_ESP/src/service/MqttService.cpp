@@ -42,7 +42,7 @@ void MqttService::Connect_() {
 }
 
 void MqttService::loop() {
-    if (!mqttClient->connected() && superCube->config_manager->getConfig()["Mqtt"]["autoReconnected"]) {
+    if (!mqttClient->connected() && superCube->config_manager->getConfig()["Mqtt"]["autoReconnected"].as<bool>()) {
         if (ShouldReconnect) {
             unsigned long currentMillis = millis();
             if (currentMillis - previousMillis >= interval) {
