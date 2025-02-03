@@ -12,6 +12,7 @@
 #include <main_.h>
 #include <HardwareSerial.h>
 
+extern size_t TOTAL_HEAP;
 
 super_cube::super_cube(HardwareSerial *serial) : command_registry(new CommandRegistry()),
                                                  serial(serial),
@@ -107,6 +108,57 @@ void super_cube::loop() {
 }
 
 void super_cube::_command_register() const {
+    command_registry->register_command(
+            std::unique_ptr<CommandNode>(
+                    command_registry->Literal("memory")->runs([](std::unique_ptr<Shell> shell, const R &context) {
+                        size_t freeHeap = EspClass::getFreeHeap();
+                        size_t usedHeap = TOTAL_HEAP - freeHeap;
+                        {
+                            float overallUsagePercent = (usedHeap * 100.0f) / TOTAL_HEAP;
+
+                            int barWidth = 20;
+                            int usedBarChars = static_cast<int>(barWidth * overallUsagePercent / 100.0f);
+                            char bar[32], usedPart[32], freePart[32];
+                            snprintf(usedPart, sizeof(usedPart), "%.*s", usedBarChars, "####################");
+                            snprintf(freePart, sizeof(freePart), "%*s", barWidth - usedBarChars, "");
+                            snprintf(bar, sizeof(bar), "[%s%s]", usedPart, freePart);
+                            static char message[128];
+                            snprintf(message, sizeof(message), "内存占用: %s %d%% (%u/%u 字节)",
+                                     bar, (int) overallUsagePercent, usedHeap, TOTAL_HEAP);
+                            shell->println(message);
+                        }
+                        std::vector<std::pair<String, size_t>> modules;
+                        super_cube *sc = shell->getSuperCube();
+                        if (sc->serialHandler != nullptr)
+                            modules.emplace_back("serialHandler", sizeof(*(sc->serialHandler)));
+                        if (sc->command_registry != nullptr)
+                            modules.emplace_back("command_registry", sizeof(*(sc->command_registry)));
+                        if (sc->config_manager != nullptr)
+                            modules.emplace_back("config_manager", sizeof(*(sc->config_manager)));
+                        if (sc->httpServer != nullptr)
+                            modules.emplace_back("httpServer", sizeof(*(sc->httpServer)));
+                        if (sc->webSocketService != nullptr)
+                            modules.emplace_back("webSocketService", sizeof(*(sc->webSocketService)));
+                        if (sc->mqttService != nullptr)
+                            modules.emplace_back("mqttService", sizeof(*(sc->mqttService)));
+                        if (sc->lightHandler != nullptr)
+                            modules.emplace_back("lightHandler", sizeof(*(sc->lightHandler)));
+                        if (sc->attitudeService != nullptr)
+                            modules.emplace_back("attitudeService", sizeof(*(sc->attitudeService)));
+                        std::sort(modules.begin(), modules.end(), [](const auto &a, const auto &b) {
+                            return a.second > b.second;
+                        });
+
+                        shell->println("模块内存占用情况：");
+
+                        for (const auto &mod: modules) {
+                            float modPercent = (mod.second * 100.0f) / usedHeap;
+                            static char modMessage[64];
+                            snprintf(modMessage, sizeof(modMessage), "%s: %u 字节 (%.2f%%)", mod.first.c_str(),
+                                     mod.second, modPercent);
+                            shell->println(modMessage);
+                        }
+                    })));
     command_registry->register_command(
             std::unique_ptr<CommandNode>(
                     command_registry->Literal("restart")->runs([](std::unique_ptr<Shell> shell, const R &context) {

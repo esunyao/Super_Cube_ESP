@@ -10,9 +10,10 @@
 #include "Wire.h"
 
 #define LED_PIN 13
-bool blinkState = false;
+size_t TOTAL_HEAP = EspClass::getFreeHeap();
 // WiFi设置
 std::unique_ptr<super_cube> cube;
+
 void setup() {
     cube = std::make_unique<super_cube>(&Serial);
     cube->setup();
