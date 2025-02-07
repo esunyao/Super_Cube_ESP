@@ -49,26 +49,21 @@ void AttitudeService::setup() {
     /* 确保它工作正常（如果是，则返回0） */
     StartDmp();
 }
-
-bool AttitudeService::ConnectionTest() {
+bool AttitudeService::ConnectionTest(){
     return mpu->testConnection();
 }
-
-bool AttitudeService::getReadyStatus() {
+bool AttitudeService::getReadyStatus(){
     return DMPReady;
 }
-
-bool AttitudeService::getDevStatus() {
+bool AttitudeService::getDevStatus(){
     return devStatus;
 }
-
-uint8_t AttitudeService::InitDmp() {
+uint8_t AttitudeService::InitDmp(){
     superCube->serial->println("[MPU] 初始化DMP...");
     devStatus = mpu->dmpInitialize();
     return devStatus;
 }
-
-bool AttitudeService::StartDmp() {
+bool AttitudeService::StartDmp(){
     if (devStatus == 0) {
         mpu->CalibrateAccel(100);  // 校准时间：生成偏移量并校准我们的MPU6050
         mpu->CalibrateGyro(100);
@@ -88,7 +83,6 @@ bool AttitudeService::StartDmp() {
         return false;
     }
 }
-
 void AttitudeService::OffsetSet(int16_t XG, int16_t YG, int16_t ZG, int16_t XA, int16_t YA, int16_t ZA) {
     /* 在此处提供您的陀螺仪偏移量，按最小灵敏度缩放 */
     mpu->setXGyroOffset(XG);
@@ -99,14 +93,14 @@ void AttitudeService::OffsetSet(int16_t XG, int16_t YG, int16_t ZG, int16_t XA, 
     mpu->setZAccelOffset(ZA);
 }
 
-JsonDocument AttitudeService::GetData(bool out_put, const String &mode) {
+JsonDocument AttitudeService::GetData(bool out_put, const String& mode) {
     JsonDocument jsdoc = JsonDocument();
     std::map<String, int> modeMap = {
             {"OUTPUT_READABLE_QUATERNION",   1},       // 四元数分量
             {"OUTPUT_READABLE_EULER",        2},       // 欧拉角
             {"OUTPUT_READABLE_YAWPITCHROLL", 3},       // 偏航/俯仰/滚转角
             {"OUTPUT_READABLE_REALACCEL",    4},       // 输出去除重力后的加速度分量
-            {"OUTPUT_INIT",                  5}
+            {"OUTPUT_INIT", 5}
     };
     Quaternion q;           // [w, x, y, z]         四元数容器
     VectorInt16 aa;         // [x, y, z]            加速度传感器测量值
@@ -116,7 +110,7 @@ JsonDocument AttitudeService::GetData(bool out_put, const String &mode) {
     float ypr[3];           // [yaw, pitch, roll]   偏航/俯仰/滚转容器和重力向量
     int16_t ax, ay, az;
     int16_t gx, gy, gz;
-    if (mpu->dmpGetCurrentFIFOPacket(FIFOBuffer)) {
+    if(mpu->dmpGetCurrentFIFOPacket(FIFOBuffer)) {
         switch (modeMap[mode]) {
             case 1:
                 mpu->dmpGetQuaternion(&q, FIFOBuffer);
