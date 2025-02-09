@@ -13,15 +13,18 @@
 // ...existing code...（删除 "driver/uart.h" 和 FreeRTOS 相关头文件）
 
 // 定义传感器串口：ESP8266 使用 SoftwareSerial（TX: GPIO4, RX: GPIO5）
+// 定义传感器串口：ESP8266 使用 SoftwareSerial（TX: GPIO4, RX: GPIO5）
 SoftwareSerial sensorSerial(D7, D8);  // 注意：构造函数参数为(rx, tx)
 
+// 定义缓冲区大小
 #define BUF_SIZE 1024
 
-#define ACC_UPDATE		0x01
-#define GYRO_UPDATE		0x02
-#define ANGLE_UPDATE	0x04
-#define MAG_UPDATE		0x08
-#define READ_UPDATE		0x80
+// 定义数据更新标志位
+#define ACC_UPDATE      0x01  // 加速度更新
+#define GYRO_UPDATE     0x02  // 陀螺仪更新
+#define ANGLE_UPDATE    0x04  // 角度更新
+#define MAG_UPDATE      0x08  // 磁场更新
+#define READ_UPDATE     0x80  // 读取更新
 static volatile char s_cDataUpdate = 0;
 const uint32_t c_uiBaud[10] = {0, 4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600};
 
@@ -133,18 +136,31 @@ void CopeCmdData(unsigned char ucData)
 
 static void ShowHelp(void)
 {
+    // Serial.printf("\r\n************************ WIT_SDK_DEMO ************************\r\n");
+    //    Serial.printf("UART SEND:a\\r\\n   Acceleration calibration.\r\n");
+    //    Serial.printf("UART SEND:m\\r\\n   Magnetic field calibration, After calibration send: e\\r\\n to indicate the end\r\n");
+    //    Serial.printf("UART SEND:U\\r\\n   Bandwidth increase.\r\n");
+    //    Serial.printf("UART SEND:u\\r\\n   Bandwidth reduction.\r\n");
+    //    Serial.printf("UART SEND:B\\r\\n   Baud rate increased to 115200.\r\n");
+    //    Serial.printf("UART SEND:b\\r\\n   Baud rate reduction to 9600.\r\n");
+    //    Serial.printf("UART SEND:R\\r\\n   The return rate increases to 10Hz.\r\n");
+    //    Serial.printf("UART SEND:r\\r\\n   The return rate reduction to 1Hz.\r\n");
+    //    Serial.printf("UART SEND:C\\r\\n   Basic return content: acceleration, angular velocity, angle, magnetic field.\r\n");
+    //    Serial.printf("UART SEND:c\\r\\n   Return content: acceleration.\r\n");
+    //    Serial.printf("UART SEND:h\\r\\n   help.\r\n");
+    //    Serial.printf("******************************************************************************\r\n");
     Serial.printf("\r\n************************ WIT_SDK_DEMO ************************\r\n");
-    Serial.printf("UART SEND:a\\r\\n   Acceleration calibration.\r\n");
-    Serial.printf("UART SEND:m\\r\\n   Magnetic field calibration, After calibration send: e\\r\\n to indicate the end\r\n");
-    Serial.printf("UART SEND:U\\r\\n   Bandwidth increase.\r\n");
-    Serial.printf("UART SEND:u\\r\\n   Bandwidth reduction.\r\n");
-    Serial.printf("UART SEND:B\\r\\n   Baud rate increased to 115200.\r\n");
-    Serial.printf("UART SEND:b\\r\\n   Baud rate reduction to 9600.\r\n");
-    Serial.printf("UART SEND:R\\r\\n   The return rate increases to 10Hz.\r\n");
-    Serial.printf("UART SEND:r\\r\\n   The return rate reduction to 1Hz.\r\n");
-    Serial.printf("UART SEND:C\\r\\n   Basic return content: acceleration, angular velocity, angle, magnetic field.\r\n");
-    Serial.printf("UART SEND:c\\r\\n   Return content: acceleration.\r\n");
-    Serial.printf("UART SEND:h\\r\\n   help.\r\n");
+    Serial.printf("UART 发送:a\\r\\n   加速度校准。\r\n");
+    Serial.printf("UART 发送:m\\r\\n   磁场校准，校准后发送: e\\r\\n 表示结束\r\n");
+    Serial.printf("UART 发送:U\\r\\n   增加带宽。\r\n");
+    Serial.printf("UART 发送:u\\r\\n   减少带宽。\r\n");
+    Serial.printf("UART 发送:B\\r\\n   波特率增加到 115200。\r\n");
+    Serial.printf("UART 发送:b\\r\\n   波特率减少到 9600。\r\n");
+    Serial.printf("UART 发送:R\\r\\n   返回速率增加到 10Hz。\r\n");
+    Serial.printf("UART 发送:r\\r\\n   返回速率减少到 1Hz。\r\n");
+    Serial.printf("UART 发送:C\\r\\n   基本返回内容：加速度、角速度、角度、磁场。\r\n");
+    Serial.printf("UART 发送:c\\r\\n   返回内容：加速度。\r\n");
+    Serial.printf("UART 发送:h\\r\\n   帮助。\r\n");
     Serial.printf("******************************************************************************\r\n");
 }
 

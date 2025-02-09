@@ -120,9 +120,16 @@ void MqttService::handleMessage(char *topic, byte *payload, unsigned int length)
             std::unique_ptr<Shell> shell = std::make_unique<Shell>(superCube, false, true);
             shell->setup();
             shell->jsonDoc = jsonDoc;
-            publishMessage(superCube->command_registry->execute_command(std::move(shell),
-                                                                        jsonDoc.operator[](
-                                                                                "command").as<std::string>())->res);
+            if (topic == superCube->config_manager->getConfig()["Mqtt"]["topic"].as<const char *>())
+                publishMessage(superCube->command_registry->execute_command(std::move(shell),
+                                                                            jsonDoc.operator[](
+                                                                                    "command").as<std::string>())->res);
+            else
+                publishMessage(superCube->command_registry->execute_command(std::move(shell),
+                                                                            jsonDoc.operator[](
+                                                                                    "command").as<std::string>())->res,
+                               superCube->config_manager->getConfig()["Mqtt"]["callback_topic"].as<String>() + "/" +
+                               superCube->config_manager->getConfig()["ID"].as<String>());
         }
     } else {
         superCube->mdebugln("[MqttServer] JSON deserialization failed: ");

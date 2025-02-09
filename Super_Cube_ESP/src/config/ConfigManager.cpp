@@ -3,75 +3,66 @@
 //
 #include "config/ConfigManager.h"
 #include "main_.h"
-#include <EEPROM.h>
+#include <LittleFS.h>
 #include <algorithm>
 #include <utility>
 #include "ArduinoJson.h"
 #include "utils/uuid_utils.h"
 
-// Constructor to initialize EEPROM
+// Constructor to initialize SPIFFS
 ConfigManager::ConfigManager(super_cube *superCube) : superCube(superCube) {
-    EEPROM.begin(EEPROM_SIZE);
-    this->eepromSize = EEPROM_SIZE;
+    if (!LittleFS.begin()) {
+        LittleFS.format();  // 初始化失败时格式化
+        LittleFS.begin();
+    }
 }
 
-// Initialize EEPROM and load config
+// Initialize SPIFFS and load config
 void ConfigManager::initialize() {
-    // Read config from EEPROM
+    // Read config from SPIFFS
     if (!readConfig() || !validateConfig()) {
         // Handle invalid or missing config
         clear();
         clearConfigDoc();
         // Optionally set default config here if needed
         createDefaultConfig();  // Create the default config
-        saveConfig();  // Save it to EEPROM
+        saveConfig();  // Save it to SPIFFS
     }
     if (configDoc["reset"] == true) {
         clear();
         clearConfigDoc();
-        createDefaultConfig();  // Create the default config
-        saveConfig();  // Save it to EEPROM
+        createDefaultConfig();
+        saveConfig();
     }
-    requiredKeys.reset();
+    requiredKeys.reset(); // 释放requiredKeys内存
 }
 
-// Clear the EEPROM
+// Clear the config file
 void ConfigManager::clear() {
-    for (unsigned int i = 0; i < EEPROM.length(); i++) {
-        EEPROM.write(i, 0);
-    }
-    EEPROM.commit();
+    LittleFS.remove("/config.msgpack");
 }
 
-// Save the config from the JsonDocument to EEPROM
+// Save the config from the JsonDocument to SPIFFS
 void ConfigManager::saveConfig() {
-    String json;
-    serializeJson(configDoc, json);
-    int len = json.length();
-    EEPROM.write(0, (uint8_t) (len >> 8));  // 写入高字节
-    EEPROM.write(1, (uint8_t) (len & 0xFF));  // 写入低字节
-    for (int i = 0; i < len; i++) {
-        EEPROM.write(4 + i, json[i]);  // Write the JSON data itself
-    }
-    EEPROM.commit();
+    File file = LittleFS.open("/config.msgpack", "w");
+    if (!file) return;
+
+//    size_t len = serializeMsgPack(configDoc, file);
+    file.close();
 }
 
-// Read the config from EEPROM into the JsonDocument
+// Read the config from SPIFFS into the JsonDocument
 bool ConfigManager::readConfig() {
-    int len = (EEPROM.read(0) << 8) | EEPROM.read(1);  // 组合高字节和低字节
+    if (!LittleFS.exists("/config.msgpack")) return false;
+    File file = LittleFS.open("/config.msgpack", "r");
+    if (!file) return false;
     clearConfigDoc();
-    if (len > 0 && len < eepromSize) {
-        String json;
-        for (int i = 0; i < len; i++) {
-            json += (char) EEPROM.read(4 + i);  // Read the JSON string
-        }
-
-        DeserializationError error = deserializeJson(configDoc, json);
-        return !error;  // Return true if deserialization was successful
-    }
-    return false;  // Return false if there was an issue reading or deserializing
+    DeserializationError error = deserializeMsgPack(configDoc, file);
+    file.close();
+    return !error;
 }
 
+// 以下方法无需修改（保持原有逻辑）
 void ConfigManager::createDefaultConfig() {
     String uuid = generateUUIDv4();
     configDoc["reset"] = false;
@@ -98,6 +89,10 @@ void ConfigManager::createDefaultConfig() {
     configDoc["Attitude"]["enable"] = false;
     configDoc["Attitude"]["SCL"] = 6;
     configDoc["Attitude"]["SDA"] = 7;
+    configDoc["Attitude"]["RX"] = 7;
+    configDoc["Attitude"]["TX"] = 8;
+    configDoc["Attitude"]["MODE"] = "JY901L";
+    configDoc["Attitude"]["AutoPublicAttitude"] = false;
 }
 
 // Validate the config JSON structure
@@ -113,38 +108,39 @@ bool ConfigManager::validateConfig() {
 }
 
 template<typename T>
-CommandNode *ConfigManager::_init_generic(std::string node, std::function<void(JsonVariant, T)> setter) {
-    return superCube->command_registry
-            ->Literal(node)
-            ->runs([this, node](std::unique_ptr<Shell> shell, const R &context) {
-                shell->println(configDoc[node].as<String>().c_str());
-            })
+CommandNode *
+ConfigManager::_init_generic(std::string node, JsonVariant doc, std::function<void(JsonVariant, T)> setter) {
+    return superCube->command_registry->Literal("set")
             ->then(superCube->command_registry
-                           ->Literal("set")
-                           ->then(superCube->command_registry
-                                          ->Param<T>("value")
-                                          ->runs([this, node, setter](std::unique_ptr<Shell> shell, const R &context) {
-                                              setter(configDoc[node], context.get<T>("value"));
-                                              saveConfig();
-                                          })
-                           )
+                           ->Param<T>("value")
+                           ->runs([this, node, setter, doc](std::unique_ptr<Shell> shell,
+                                                            const R &context) {
+                               setter(doc, context.get<T>("value"));
+                               shell->println((TypeName<T>::get() + " Completely set " +
+                                               context.get<std::string>("value")).c_str());
+                               saveConfig();
+                           })
             );
 }
 
-CommandNode *ConfigManager::_init_stringer(std::string node) {
-    return _init_generic<std::string>(std::move(node), [](JsonVariant doc, std::string value) {
+void ConfigManager::_init_get(std::unique_ptr<Shell> shell, const R &context, JsonVariant doc) {
+    shell->println(doc.as<String>().c_str());
+}
+
+CommandNode *ConfigManager::_init_stringer(std::string node, JsonVariant doc) {
+    return _init_generic<std::string>(std::move(node), std::move(doc), [](JsonVariant doc, std::string value) {
         doc.set(value.c_str());
     });
 }
 
-CommandNode *ConfigManager::_init_boolean(std::string node) {
-    return _init_generic<bool>(std::move(node), [](JsonVariant doc, bool value) {
+CommandNode *ConfigManager::_init_boolean(std::string node, JsonVariant doc) {
+    return _init_generic<bool>(std::move(node), std::move(doc), [](JsonVariant doc, bool value) {
         doc.set(value);
     });
 }
 
-CommandNode *ConfigManager::_init_inter(std::string node) {
-    return _init_generic<int>(std::move(node), [](JsonVariant doc, int value) {
+CommandNode *ConfigManager::_init_inter(std::string node, JsonVariant doc) {
+    return _init_generic<int>(std::move(node), std::move(doc), [](JsonVariant doc, int value) {
         doc.set(value);
     });
 }
@@ -154,30 +150,31 @@ void ConfigManager::registerNodeCommands(const std::string &path, JsonVariant va
     if (path == "light" || path == "light_presets")
         return;
     if (variant.is<bool>()) {
-        parentNode->then(_init_boolean(path));
+        parentNode->then(_init_boolean(path, doc));
+        parentNode->runs(std::bind(&ConfigManager::_init_get, this, std::placeholders::_1, std::placeholders::_2, doc));
         return;
     } else if (variant.is<const char *>()) {
-        parentNode->then(_init_stringer(path));
+        parentNode->then(_init_stringer(path, doc));
         return;
     } else if (variant.is<int>()) {
-        parentNode->then(_init_inter(path));
+        parentNode->then(_init_inter(path, doc));
         return;
-    }
-    for (JsonPair kv: variant.as<JsonObject>()) {
-        if (kv.key() == "light" || kv.key() == "light_presets")
-            continue;
-        std::string newPath = path.empty() ? kv.key().c_str() : path + "." + kv.key().c_str();
-        CommandNode *subNode = superCube->command_registry->Literal(kv.key().c_str());
+    } else if (variant.is<JsonObject>())
+        for (JsonPair kv: variant.as<JsonObject>()) {
+            if (kv.key() == "light" || kv.key() == "light_presets")
+                continue;
+            std::string newPath = path.empty() ? kv.key().c_str() : path + "." + kv.key().c_str();
+            CommandNode *subNode = superCube->command_registry->Literal(kv.key().c_str());
 
-        // 获取当前 doc 的子成员，确保递归进入到下一层嵌套对象
-        JsonVariant nextDoc = doc[kv.key()];  // 使用 [] 访问子成员
+            // 获取当前 doc 的子成员，确保递归进入到下一层嵌套对象
+            JsonVariant nextDoc = doc[kv.key()];  // 使用 [] 访问子成员
 
-        // 如果该成员存在，递归调用下一层
-        if (!nextDoc.isNull()) {
-            registerNodeCommands(newPath, kv.value(), subNode, nextDoc);
-            parentNode->then(subNode);
+            // 如果该成员存在，递归调用下一层
+            if (!nextDoc.isNull()) {
+                registerNodeCommands(newPath, kv.value(), subNode, nextDoc);
+                parentNode->then(subNode);
+            }
         }
-    }
 
 }
 
@@ -188,6 +185,13 @@ void ConfigManager::command_initialize() {
     CommandNode *literal = superCube->command_registry->Literal("config");
     literal->then(
             superCube->command_registry->Literal("get")->runs([this](std::unique_ptr<Shell> shell, const R &context) {
+                String output;
+                serializeMsgPack(configDoc, output);
+                shell->println(output.c_str());
+            })
+    );
+    literal->then(
+            superCube->command_registry->Literal("gets")->runs([this](std::unique_ptr<Shell> shell, const R &context) {
                 shell->println(superCube->config_manager->getConfig().as<String>().c_str());
             })
     );

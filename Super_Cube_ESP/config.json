@@ -3,7 +3,7 @@
   "DEBUG": false,
   "HTTPDEBUG": false,
   "MQTTDEBUG": false,
-  "ID": "ASF",
+  "ID": "",
   "Internet": {
     "ssid": "inhand",
     "passwd": "33336666"
@@ -23,14 +23,18 @@
     "username": "SuperCube",
     "password": "123456",
     "topic": "superCube/topic",
-    "autoReconnected": false
-  },
-  "Attitude": {
-    "enable": true,
-    "SCL": 6,
-    "SDA": 7
+    "autoReconnected": true
   },
   "serverMode": "Mqtt",
   "light": [],
-  "light_presets": {}
+  "light_presets": {},
+  "Attitude": {
+    "enable": false,
+    "SCL": 6,
+    "SDA": 7,
+    "RX": 7,
+    "TX": 8,
+    "MODE": "JY901L",
+    "AutoPublicAttitude": false
+  }
 }

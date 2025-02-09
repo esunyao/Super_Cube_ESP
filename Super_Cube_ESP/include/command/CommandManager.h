@@ -102,6 +102,8 @@ public:
 
     using CommandFunction = std::function<void(std::unique_ptr<Shell>, const R &)>;
 
+    explicit CommandNode();
+
     explicit CommandNode(const std::string &name);
 
     explicit CommandNode(const std::string &name, const std::string &type);

@@ -51,6 +51,9 @@ CommandNode::CommandNode(const std::string &name) : name(name), commandFunc(null
 
 CommandNode::CommandNode(const std::string &name, const std::string &type) : name(name), type(type),
                                                                              commandFunc(nullptr) {}
+CommandNode::CommandNode() {
+
+}
 
 CommandNode *CommandNode::then(CommandNode *next) {
     children[next->get_name()] = std::unique_ptr<CommandNode>(next);

@@ -96,6 +96,8 @@ void super_cube::setup() {
 void super_cube::loop() {
 //    Serial.println(reinterpret_cast<uintptr_t>(this), HEX);
     serialHandler->handleSerial();
+    if (config_manager->getConfig()["Attitude"]["enable"] && attitudeService != nullptr)
+        attitudeService->loop();
     if (config_manager->getConfig()["serverMode"] == "Http" && webSocketService->webSocket != nullptr) {
         httpServer->handleClient();
     }
@@ -232,45 +234,6 @@ void super_cube::_command_register() const {
                                 shelll->println("Lighting up");
                                 stripasd.reset();
                             })));
-    command_registry->register_command(
-            std::unique_ptr<CommandNode>(command_registry->Literal("Server_posture")->then(
-                            command_registry->Literal("get")->runs(
-                                    [this](std::unique_ptr<Shell> shelll, const R &context) {
-                                        bool out_put = false;
-                                        if (shelll->jsonDoc["out_put"].is<bool>())
-                                            out_put = shelll->jsonDoc["out_put"];
-                                        JsonDocument data = shelll->getSuperCube()->attitudeService->GetData(out_put,
-                                                                                                             shelll->jsonDoc["mode"].as<String>());
-                                        String dataStr;
-                                        serializeJson(data, dataStr);
-                                        if (shelll->getSuperCube())
-                                            shelll->getSuperCube()->mqttService->publishMessage(dataStr,
-                                                                                                shelll->getSuperCube()->config_manager->getConfig()["Mqtt"]["attitude_topic"].as<String>() +
-                                                                                                shelll->getSuperCube()->config_manager->getConfig()["ID"].as<String>());
-                                        else
-                                            shelll->println("only Support Mqtt");
-                                    }))
-                                                 ->then(command_registry->Literal("getDevStatus")->runs(
-                                                         [this](std::unique_ptr<Shell> shelll, const R &context) {
-                                                             shelll->getSuperCube()->debugln("[MPU]",
-                                                                                             shelll->getSuperCube()->attitudeService->getDevStatus());
-                                                         }))
-                                                 ->then(command_registry->Literal("getReadyStatus")->runs(
-                                                         [this](std::unique_ptr<Shell> shelll, const R &context) {
-                                                             shelll->getSuperCube()->debugln("[MPU]",
-                                                                                             shelll->getSuperCube()->attitudeService->getReadyStatus());
-                                                         }))
-                                                 ->then(command_registry->Literal("ConnectionTest")->runs(
-                                                         [this](std::unique_ptr<Shell> shelll, const R &context) {
-                                                             shelll->getSuperCube()->debugln("[MPU]",
-                                                                                             shelll->getSuperCube()->attitudeService->ConnectionTest());
-                                                         }))
-                                                 ->then(command_registry->Literal("StartDmp")->runs(
-                                                         [this](std::unique_ptr<Shell> shelll, const R &context) {
-                                                             shelll->getSuperCube()->debugln("[MPU]",
-                                                                                             shelll->getSuperCube()->attitudeService->StartDmp());
-                                                         }))
-            ));
 }
 
 void super_cube::_connectWiFi(const char *ssid, const char *password) {
