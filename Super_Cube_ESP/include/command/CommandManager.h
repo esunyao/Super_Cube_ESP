@@ -17,9 +17,20 @@ class super_cube;
 
 class Shell {
 public:
-    Shell(super_cube *superCube);
+    enum Flags : int {
+        HTTP = 0x01,   // 二进制 0001
+        MQTT = 0x02,  // 二进制 0010
+        CONSOLE = 0x04,  // 二进制 0100
+    };
 
-    Shell(super_cube *superCube, bool httpmode, bool mqttMode);
+    explicit Shell(super_cube *superCube);
+
+    explicit Shell(super_cube *superCube, Flags flag);
+
+    void setFlag(Flags flagType);
+    bool isNetworkFlag();
+
+    bool isFlag(Flags flagType);
 
     void println(const char *message);
 
@@ -27,18 +38,13 @@ public:
 
     void setup();
 
-    bool getHttpMode();
-
-    bool getMqttMode();
-
     super_cube *getSuperCube();
 
     String res;
     JsonDocument jsonDoc;
 private:
     super_cube *superCube;
-    bool httpMode = false;
-    bool mqttMode = false;
+    Flags flag;
 };
 
 class TYPE {

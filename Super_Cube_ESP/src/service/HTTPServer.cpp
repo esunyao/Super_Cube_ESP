@@ -37,7 +37,7 @@ void HttpServer::handleData() {
 
     // 处理解析后的 JSON 数据
     // 示例: 获取 JSON 中的字段
-    if (jsonDoc.containsKey("console_trigger")) {
+    if (jsonDoc["console_trigger"]) {
         String trigger = jsonDoc["console_trigger"].as<String>();
 
     }
@@ -67,9 +67,11 @@ void HttpServer::handleCmdCommandExecution() {
         superCube->debugln("[HttpServer][", clientIP.toString(), "] ", jsonDoc->as<String>());
         if (jsonDoc->operator[]("command").is<std::string>()) {
             superCube->hdebugln("[HttpServer] Command: ", jsonDoc->operator[]("command").as<String>());
-            std::unique_ptr<Shell> shell = std::make_unique<Shell>(superCube, true, false);
+            std::unique_ptr<Shell> shell = std::make_unique<Shell>(superCube, Shell::Flags::HTTP);
             shell->setup();
-            httpServer.send(200, "application/json", superCube->command_registry->execute_command(std::move(shell), jsonDoc->operator[]("command").as<std::string>())->res);
+            httpServer.send(200, "application/json", superCube->command_registry->execute_command(std::move(shell),
+                                                                                                  jsonDoc->operator[](
+                                                                                                          "command").as<std::string>())->res);
         }
     } else {
         superCube->hdebugln("[HttpServer] JSON deserialization failed: ");
@@ -90,7 +92,7 @@ void HttpServer::handleCommandExecution() {
             superCube->debugln("[HttpServer][", clientIP.toString(), "] ", jsonDoc.as<String>());
             if (jsonDoc.operator[]("command").is<std::string>()) {
                 superCube->hdebugln("[HttpServer] Command: ", jsonDoc.operator[]("command").as<String>());
-                std::unique_ptr<Shell> shell = std::make_unique<Shell>(superCube, true, false);
+                std::unique_ptr<Shell> shell = std::make_unique<Shell>(superCube, Shell::Flags::HTTP);
                 shell->setup();
                 shell->jsonDoc = jsonDoc;
                 superCube->command_registry->execute_command(std::move(shell),

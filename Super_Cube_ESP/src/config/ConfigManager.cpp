@@ -46,8 +46,7 @@ void ConfigManager::clear() {
 void ConfigManager::saveConfig() {
     File file = LittleFS.open("/config.msgpack", "w");
     if (!file) return;
-
-//    size_t len = serializeMsgPack(configDoc, file);
+    size_t len = serializeMsgPack(configDoc, file);
     file.close();
 }
 
@@ -69,6 +68,7 @@ void ConfigManager::createDefaultConfig() {
     configDoc["DEBUG"] = false;
     configDoc["HTTPDEBUG"] = false;
     configDoc["MQTTDEBUG"] = false;
+    configDoc["ATTITUDEDEBUG"] = false;
     configDoc["ID"] = uuid.substring(uuid.length() - 5);
     configDoc["Internet"]["ssid"] = "inhand";
     configDoc["Internet"]["passwd"] = "33336666";
@@ -198,14 +198,14 @@ void ConfigManager::command_initialize() {
 
     literal->then(superCube->command_registry->Literal("setFromJson")->runs(
             [this](std::unique_ptr<Shell> shell, const R &context) {
-                if (shell->getHttpMode() || shell->getMqttMode()) {
+                if (shell->isNetworkFlag()) {
                     superCube->config_manager->clear();
                     superCube->config_manager->clearConfigDoc();
                     configDoc.set(shell->jsonDoc["config"]);
                     superCube->config_manager->saveConfig();
                     shell->println("Config Replace Successful");
                 } else {
-                    shell->println("Only can be used in HTTP Mode");
+                    shell->println("Only can be used in Network Mode");
                 }
             }));
 

@@ -3,8 +3,8 @@
 //
 #include <service/WebsocketService.h>
 
-WebSocketService::WebSocketService(super_cube *superCube, String ip, int port) : ip(ip), port(port),
-                                                                                 superCube(superCube) {
+WebSocketService::WebSocketService(super_cube *superCube, String ip, int port) : superCube(superCube), ip(ip),
+                                                                                 port(port) {
     webSocket = nullptr;
 }
 
@@ -33,6 +33,14 @@ void WebSocketService::handleWebSocketEvent(WStype_t type, uint8_t *payload, siz
             break;
         case WStype_ERROR:
             superCube->debugln("Error");
+            break;
+        case WStype_FRAGMENT_TEXT_START:
+            break;
+        case WStype_FRAGMENT_BIN_START:
+            break;
+        case WStype_FRAGMENT:
+            break;
+        case WStype_FRAGMENT_FIN:
             break;
     }
 }

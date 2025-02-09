@@ -10,7 +10,7 @@ LightHandler::LightHandler(super_cube *superCube_) : superCube(superCube_) {
 
 void LightHandler::lightInitiation() {
     for (JsonVariant v: superCube->config_manager->getConfig()["light"].as<JsonArray>()) {
-        std::unique_ptr<Shell> shell = std::make_unique<Shell>(superCube, false, false);
+        std::unique_ptr<Shell> shell = std::make_unique<Shell>(superCube);
         shell->jsonDoc.clear();
         std::string buffer;
         serializeJson(v, buffer);

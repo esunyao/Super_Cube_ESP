@@ -49,6 +49,7 @@ public:
 
     bool HTTPServiceDEBUG = false;
     bool MqttServiceDEBUG = false;
+    bool AttitudeServiceDEBUG = false;
 
     template<typename T, typename... Args>
     void debug(const T &first, const Args &... rest) {
@@ -60,6 +61,13 @@ public:
     void debugln(const T &first, const Args &... rest) {
         _running([this, &first]() { serial->print(first); }, DEBUG);
         _running([this, &rest...]() { debugln(rest...); }, DEBUG);
+    }
+
+    template<typename... Args>
+    void adebugln(const Args &... args) {
+        _running([this, args...]() {
+            debugln(args...);
+        }, AttitudeServiceDEBUG);
     }
 
     template<typename... Args>

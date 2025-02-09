@@ -43,6 +43,8 @@ void super_cube::setup() {
         HTTP_DEBUG_MODE_SET(true);
     if (config_manager->getConfig()["MQTTDEBUG"])
         Mqtt_DEBUG_MODE_SET(true);
+    if (config_manager->getConfig()["ATTITUDEDEBUG"])
+        AttitudeServiceDEBUG = true;
     debugln("[DEBUG] Loading Config Complete");
     config_manager->command_initialize();
     _command_register();

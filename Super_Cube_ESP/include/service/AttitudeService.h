@@ -68,10 +68,16 @@ private:
 
     // volatile 告知编译器该变量可能被程序之外的机制（如中断、多线程、硬件等）意外修改。
     // 禁止编译器对此变量进行优化（如缓存到寄存器），确保每次访问都直接读写内存。
-    static volatile char s_cDataUpdate;
+    static volatile uint8_t s_cDataUpdate;
+
+    void CmdProcess(char s_cCmd, std::unique_ptr<Shell> shell);
+
+    float Acc[3], Gyro[3], Angle[3], Mag[3];
     // 共用类
 
     void InitializeCommand();
+
+    void JYUpdate();
 };
 
 #endif //SUPER_CUBE_ESP_ATTITUDESERVICE_H

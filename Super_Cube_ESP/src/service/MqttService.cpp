@@ -99,13 +99,8 @@ void MqttService::publishMessage(const String &message, String topic_pub) {
 }
 
 void MqttService::handleMessage(char *topic, byte *payload, unsigned int length) {
-    String requestBody;
-    for (unsigned int i = 0; i < length; i++) {
-        requestBody += (char) payload[i];
-    }
-
     JsonDocument jsonDoc = JsonDocument();
-    DeserializationError error = deserializeJson(jsonDoc, requestBody);
+    DeserializationError error = deserializeMsgPack(jsonDoc, payload, length);
     superCube->debugln("[MqttServer] Get request from: ", topic);
     if (!error) {
         superCube->debugln("[MqttServer][", topic, "] ", jsonDoc.as<String>());
@@ -117,7 +112,7 @@ void MqttService::handleMessage(char *topic, byte *payload, unsigned int length)
             }
         if (jsonDoc.operator[]("command").is<std::string>()) {
             superCube->mdebugln("[MqttServer] Command: ", jsonDoc.operator[]("command").as<String>());
-            std::unique_ptr<Shell> shell = std::make_unique<Shell>(superCube, false, true);
+            std::unique_ptr<Shell> shell = std::make_unique<Shell>(superCube, Shell::Flags::MQTT);
             shell->setup();
             shell->jsonDoc = jsonDoc;
             if (topic == superCube->config_manager->getConfig()["Mqtt"]["topic"].as<const char *>())

@@ -13,14 +13,14 @@
 // 实现 Shell 类
 void Shell::println(const char *message) {
     // 打印消息到命令行
-    if (httpMode || mqttMode)
+    if (isNetworkFlag())
         res += (String) message + '\n';
     superCube->serial->println(message);
 }
 
 void Shell::print(const char *message) {
     // 打印消息到命令行
-    if (httpMode || mqttMode)
+    if (isNetworkFlag())
         res += message;
     superCube->serial->print(message);
 }
@@ -29,21 +29,24 @@ super_cube *Shell::getSuperCube() {
     return this->superCube;
 }
 
-Shell::Shell(super_cube *superCube) : superCube(superCube) {}
+Shell::Shell(super_cube *superCube) : superCube(superCube), flag(Flags::CONSOLE) {}
 
-Shell::Shell(super_cube *superCube, bool httpmode, bool mqttmode) : superCube(superCube), httpMode(httpmode),
-                                                                    mqttMode(mqttmode) {}
+Shell::Shell(super_cube *superCube, Flags flag) : superCube(superCube), flag(flag) {}
 
 void Shell::setup() {
     res = "";
 }
 
-bool Shell::getHttpMode() {
-    return httpMode;
+void Shell::setFlag(Flags flagType) {
+    flag = flagType;
 }
 
-bool Shell::getMqttMode() {
-    return mqttMode;
+bool Shell::isNetworkFlag() {
+    return flag != Flags::CONSOLE;
+}
+
+bool Shell::isFlag(Shell::Flags flagType) {
+    return flag == flagType;
 }
 
 // CommandNode 类实现
@@ -51,6 +54,7 @@ CommandNode::CommandNode(const std::string &name) : name(name), commandFunc(null
 
 CommandNode::CommandNode(const std::string &name, const std::string &type) : name(name), type(type),
                                                                              commandFunc(nullptr) {}
+
 CommandNode::CommandNode() {
 
 }
