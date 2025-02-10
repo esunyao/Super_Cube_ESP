@@ -7,6 +7,15 @@
 #include "I2Cdev.h"
 #include <Arduino.h>
 
+#ifdef __INTELLISENSE__
+// CLion解析时，使用空实现或者简单的替代定义
+#define noInterrupts()
+#define interrupts()
+#else
+// 真正的实现（来自 Arduino.h）
+#define noInterrupts() xt_rsil(15)
+#define interrupts() xt_rsil(0)
+#endif
 AttitudeService *AttitudeService::instance = nullptr;
 volatile uint8_t AttitudeService::s_cDataUpdate = 0;
 
@@ -62,12 +71,11 @@ void AttitudeService::setup() {
     } else if (superCube->config_manager->getConfig()["Attitude"]["MODE"].as<String>() == "JY901L") {
         s_cDataUpdate = 0;
         sensorSerial.reset();
-//        sensorSerial = std::make_unique<SoftwareSerial>(
-//                pinMap[superCube->config_manager->getConfig()["Attitude"]["RX"].as<int>()],
-//                pinMap[superCube->config_manager->getConfig()["Attitude"]["TX"].as<int>()]);
-        sensorSerial = std::make_unique<SoftwareSerial>(D7, D8);
+        sensorSerial = std::make_unique<SoftwareSerial>(
+                pinMap[superCube->config_manager->getConfig()["Attitude"]["RX"].as<int>()],
+                pinMap[superCube->config_manager->getConfig()["Attitude"]["TX"].as<int>()]);
         superCube->serial->println("[JY] 正在初始化 串口 设备...");
-        sensorSerial->begin(9600);
+        sensorSerial->begin(superCube->config_manager->getConfig()["Attitude"]["Baud"].as<uint32_t>());
         superCube->debugln("[JY] 正在 初始化配置...");
         WitInit(WIT_PROTOCOL_NORMAL, 0x50);
         // 串口发送函数注册
@@ -77,6 +85,7 @@ void AttitudeService::setup() {
         // 毫秒级延时函数注册
         WitDelayMsRegister(Delayms);
         consoleMode = true;
+        superCube->serial->println("[JY] 启动完成...");
     }
     InitializeCommand();
 }
@@ -222,7 +231,6 @@ void AttitudeService::SensorUartSend(uint8_t *p_data, uint32_t uiSize) {
 }
 
 void AttitudeService::SensorDataUpdata(uint32_t uiReg, uint32_t uiRegNum) {
-    noInterrupts();
     int i;
     for (i = 0; i < uiRegNum; i++) {
         switch (uiReg) {
@@ -252,7 +260,6 @@ void AttitudeService::SensorDataUpdata(uint32_t uiReg, uint32_t uiRegNum) {
         }
         uiReg++;
     }
-    interrupts();
 }
 
 void AttitudeService::Delayms(uint16_t ucMs) {
@@ -265,10 +272,8 @@ void AttitudeService::loop() {
             unsigned char ucTemp = sensorSerial->read();
             WitSerialDataIn(ucTemp);
         }
-        noInterrupts();
         volatile char currentUpdate = s_cDataUpdate;
         s_cDataUpdate = 0; // 清除所有标志
-        interrupts();
         if (currentUpdate) {
             superCube->adebugln("[JY] 数据更新标志: ", String(currentUpdate, BIN));
             float fAcc[3], fGyro[3], fAngle[3];
@@ -408,6 +413,10 @@ void AttitudeService::JYUpdate() {
     jsdoc["Angle"]["x"] = Angle[0];
     jsdoc["Angle"]["y"] = Angle[1];
     jsdoc["Angle"]["z"] = Angle[2];
+    jsdoc["Mag"] = JsonVariant();
+    jsdoc["Mag"]["x"] = Mag[0];
+    jsdoc["Mag"]["y"] = Mag[1];
+    jsdoc["Mag"]["z"] = Mag[2];
     String dataStr;
     serializeMsgPack(jsdoc, dataStr);
     superCube->adebugln(jsdoc.as<String>());
@@ -442,14 +451,20 @@ void AttitudeService::CmdProcess(char s_cCmd, std::unique_ptr<Shell> shell) {
         case 'B':
             if (WitSetUartBaud(WIT_BAUD_115200) != WIT_HAL_OK)
                 shell->println("Set Baud Error");
-            else
+            else {
                 sensorSerial->begin(115200);
+                shell->getSuperCube()->config_manager->getConfig()["Attitude"]["Baud"] = 115200;
+                shell->getSuperCube()->config_manager->saveConfig();
+            }
             break;
         case 'b':
             if (WitSetUartBaud(WIT_BAUD_9600) != WIT_HAL_OK)
                 shell->println("Set Baud Error");
-            else
+            else {
                 sensorSerial->begin(9600);
+                shell->getSuperCube()->config_manager->getConfig()["Attitude"]["Baud"] = 9600;
+                shell->getSuperCube()->config_manager->saveConfig();
+            }
             break;
         case 'r':
             if (WitSetOutputRate(RRATE_1HZ) != WIT_HAL_OK)

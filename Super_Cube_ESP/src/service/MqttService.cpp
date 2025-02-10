@@ -3,7 +3,6 @@
 //
 #include <service/MqttService.h>
 
-
 MqttService::MqttService(super_cube *superCube,
                          String server,
                          int port,

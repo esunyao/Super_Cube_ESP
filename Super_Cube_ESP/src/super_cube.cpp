@@ -34,29 +34,17 @@ super_cube::~super_cube() {
     attitudeService.reset();
 }
 
-void super_cube::setup() {
-    config_manager->initialize();
-    serialHandler->start();
-    if (config_manager->getConfig()["DEBUG"])
-        DEBUG_MODE_SET(true);
-    if (config_manager->getConfig()["HTTPDEBUG"])
-        HTTP_DEBUG_MODE_SET(true);
-    if (config_manager->getConfig()["MQTTDEBUG"])
-        Mqtt_DEBUG_MODE_SET(true);
-    if (config_manager->getConfig()["ATTITUDEDEBUG"])
-        AttitudeServiceDEBUG = true;
-    debugln("[DEBUG] Loading Config Complete");
-    config_manager->command_initialize();
-    _command_register();
-    lightHandler->lightInitiation();
-    lightHandler.reset();
-    debugln("[DEBUG] Config: ", config_manager->getConfig().as<String>());
-    _connectWiFi(config_manager->getConfig()["Internet"]["ssid"], config_manager->getConfig()["Internet"]["passwd"]);
-    command_registry->register_command(std::unique_ptr<CommandNode>(command_registry->Literal("asdf")->then(
-            command_registry->Literal("f")->then(
-                    command_registry->IntegerParam("value")->runs([](std::unique_ptr<Shell> shell, const R &context) {
-                        shell->println(std::to_string(context.get<int>("value")).c_str());
-                    })))));
+void super_cube::releaseResource() {
+    attitudeService.reset();
+    if (config_manager->getConfig()["serverMode"] != "Http")
+        httpServer.reset();
+    if (config_manager->getConfig()["serverMode"] != "Websocket")
+        webSocketService.reset();
+    if (config_manager->getConfig()["serverMode"] != "Mqtt")
+        mqttService.reset();
+}
+
+void super_cube::setupModule() {
     if (config_manager->getConfig()["Attitude"]["enable"]) {
         attitudeService = std::make_unique<AttitudeService>(this);
         attitudeService->setup();
@@ -93,6 +81,32 @@ void super_cube::setup() {
         mqttService->Connect_();
         debugln("[DEBUG] Mqtt Server Started, Listening...");
     }
+}
+
+void super_cube::setup() {
+    config_manager->initialize();
+    serialHandler->start();
+    if (config_manager->getConfig()["DEBUG"])
+        DEBUG_MODE_SET(true);
+    if (config_manager->getConfig()["HTTPDEBUG"])
+        HTTP_DEBUG_MODE_SET(true);
+    if (config_manager->getConfig()["MQTTDEBUG"])
+        Mqtt_DEBUG_MODE_SET(true);
+    if (config_manager->getConfig()["ATTITUDEDEBUG"])
+        AttitudeServiceDEBUG = true;
+    debugln("[DEBUG] Loading Config Complete");
+    config_manager->command_initialize();
+    _command_register();
+    lightHandler->lightInitiation();
+    lightHandler.reset();
+    debugln("[DEBUG] Config: ", config_manager->getConfig().as<String>());
+    _connectWiFi(config_manager->getConfig()["Internet"]["ssid"], config_manager->getConfig()["Internet"]["passwd"]);
+    command_registry->register_command(std::unique_ptr<CommandNode>(command_registry->Literal("asdf")->then(
+            command_registry->Literal("f")->then(
+                    command_registry->IntegerParam("value")->runs([](std::unique_ptr<Shell> shell, const R &context) {
+                        shell->println(std::to_string(context.get<int>("value")).c_str());
+                    })))));
+    setupModule();
 }
 
 void super_cube::loop() {

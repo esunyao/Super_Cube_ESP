@@ -92,6 +92,7 @@ void ConfigManager::createDefaultConfig() {
     configDoc["Attitude"]["RX"] = 7;
     configDoc["Attitude"]["TX"] = 8;
     configDoc["Attitude"]["MODE"] = "JY901L";
+    configDoc["Attitude"]["Baud"] = 9600;
     configDoc["Attitude"]["AutoPublicAttitude"] = false;
 }
 

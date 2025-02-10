@@ -45,6 +45,10 @@ public:
 
     void setup();
 
+    void setupModule();
+
+    void releaseResource();
+
     void loop();
 
     bool HTTPServiceDEBUG = false;
