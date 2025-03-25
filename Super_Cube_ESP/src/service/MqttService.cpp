@@ -27,6 +27,7 @@ void MqttService::start() {
     mqttClient->setCallback([this](char *topic, byte *payload, unsigned int length) {
         this->handleMessage(topic, payload, length);
     });
+    mqttClient->setBufferSize(500);
     commandRegister();
 }
 
@@ -47,12 +48,19 @@ void MqttService::loop() {
             if (currentMillis - previousMillis >= interval) {
                 previousMillis = currentMillis;
                 if (mqttClient->connect(clientId.c_str(), username.c_str(), password.c_str())) {
+                    mqttClient->unsubscribe(topic.c_str());
+                    mqttClient->unsubscribe(
+                            (topic + "/" + superCube->config_manager->getConfig()["ID"].as<String>()).c_str());
                     mqttClient->subscribe(topic.c_str());
+                    mqttClient->subscribe(
+                            (topic + "/" + superCube->config_manager->getConfig()["ID"].as<String>()).c_str());
                     ShouldReconnect = false;
+                    superCube->setupModule();
                 } else {
                     Serial.print("failed, rc=");
                     Serial.print(mqttClient->state());
                     Serial.println(" try again in 5 seconds");
+                    superCube->releaseResource();
                 }
             }
         } else
@@ -68,10 +76,8 @@ void MqttService::publishMessage(const String &message) {
 void MqttService::publishMessage(const String &message, String topic_pub) {
     if (mqttClient->connected()) {
         superCube->mdebugln("[MqttServer] MQTT client connected, publishing message.");
-        superCube->mdebugln("[MqttServer] Publishing message: ", message);
         superCube->mdebugln("[MqttServer] PublicTopic: ", topic_pub);
-        mqttClient->setBufferSize(1034);
-        const size_t maxPayloadSize = 1024;
+        const size_t maxPayloadSize = 300;
         size_t messageLength = message.length();
         size_t offset = 0;
         int part = 0;
@@ -99,8 +105,12 @@ void MqttService::publishMessage(const String &message, String topic_pub) {
 
 void MqttService::handleMessage(char *topic, byte *payload, unsigned int length) {
     JsonDocument jsonDoc = JsonDocument();
-    DeserializationError error = deserializeMsgPack(jsonDoc, payload, length);
     superCube->debugln("[MqttServer] Get request from: ", topic);
+    String requestBody;
+    for (unsigned int i = 0; i < length; i++) {
+        requestBody += (char) payload[i];
+    }
+    DeserializationError error = deserializeJson(jsonDoc, requestBody);
     if (!error) {
         superCube->debugln("[MqttServer][", topic, "] ", jsonDoc.as<String>());
         if (jsonDoc["devices"].is<std::string>())
@@ -114,7 +124,7 @@ void MqttService::handleMessage(char *topic, byte *payload, unsigned int length)
             std::unique_ptr<Shell> shell = std::make_unique<Shell>(superCube, Shell::Flags::MQTT);
             shell->setup();
             shell->jsonDoc = jsonDoc;
-            if (topic == superCube->config_manager->getConfig()["Mqtt"]["topic"].as<const char *>())
+            if (strcmp(topic, superCube->config_manager->getConfig()["Mqtt"]["topic"].as<const char *>()) == 0)
                 publishMessage(superCube->command_registry->execute_command(std::move(shell),
                                                                             jsonDoc.operator[](
                                                                                     "command").as<std::string>())->res);

@@ -110,7 +110,7 @@ public:
     HardwareSerial *serial;
     ConfigManager *config_manager;
     std::unique_ptr<HttpServer> httpServer;
-    std::unique_ptr<WebSocketService> webSocketService;
+//    std::unique_ptr<WebSocketService> webSocketService;
     std::unique_ptr<MqttService> mqttService;
     std::unique_ptr<LightHandler> lightHandler;
     std::unique_ptr<AttitudeService> attitudeService;

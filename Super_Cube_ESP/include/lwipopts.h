@@ -6,9 +6,9 @@
 #define LWIP_DNS                 1
 
 // TCP配置
-#define TCP_WND                  1460
-#define TCP_SND_BUF              1460
-#define TCP_RCV_BUF              1460
+#define TCP_WND                  500
+#define TCP_SND_BUF              800
+#define TCP_RCV_BUF              1000
 #define MEMP_NUM_TCP_PCB         2
 
 // DNS配置

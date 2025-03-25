@@ -112,9 +112,9 @@ const CommandNode *CommandNode::find_node(const std::vector<std::string> &path, 
 
 
 void
-CommandNode::execute(std::unique_ptr<Shell> shell, const R &context) const {
+CommandNode::execute(Shell *shell, const R &context) const {
     if (commandFunc) {
-        commandFunc(std::move(shell), context);
+        commandFunc(shell, context);
     } else {
         shell->println("Error: No function to execute.");
     }
@@ -157,7 +157,6 @@ std::unique_ptr<Shell> CommandRegistry::execute_command(std::unique_ptr<Shell> s
     std::istringstream iss(input);
     std::vector<std::string> tokens;
     std::string token;
-
     while (iss >> token) {
         tokens.push_back(token);
     }
@@ -170,7 +169,7 @@ std::unique_ptr<Shell> CommandRegistry::execute_command(std::unique_ptr<Shell> s
             const CommandNode *node = it->second->find_node(subPath, context);
 
             if (node) {
-                node->execute(std::move(shell), context);
+                node->execute(shell.get(), context);
             } else {
                 shell->println("Error: Command not found or invalid parameters.");
             }
@@ -178,5 +177,5 @@ std::unique_ptr<Shell> CommandRegistry::execute_command(std::unique_ptr<Shell> s
             shell->println("Error: Command not found.");
         }
     }
-    return std::move(shell);
+    return shell;
 }

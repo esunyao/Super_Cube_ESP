@@ -114,7 +114,7 @@ ConfigManager::_init_generic(std::string node, JsonVariant doc, std::function<vo
     return superCube->command_registry->Literal("set")
             ->then(superCube->command_registry
                            ->Param<T>("value")
-                           ->runs([this, node, setter, doc](std::unique_ptr<Shell> shell,
+                           ->runs([this, node, setter, doc](Shell *shell,
                                                             const R &context) {
                                setter(doc, context.get<T>("value"));
                                shell->println((TypeName<T>::get() + " Completely set " +
@@ -124,7 +124,7 @@ ConfigManager::_init_generic(std::string node, JsonVariant doc, std::function<vo
             );
 }
 
-void ConfigManager::_init_get(std::unique_ptr<Shell> shell, const R &context, JsonVariant doc) {
+void ConfigManager::_init_get(Shell *shell, const R &context, JsonVariant doc) {
     shell->println(doc.as<String>().c_str());
 }
 
@@ -148,17 +148,21 @@ CommandNode *ConfigManager::_init_inter(std::string node, JsonVariant doc) {
 
 void ConfigManager::registerNodeCommands(const std::string &path, JsonVariant variant, CommandNode *parentNode,
                                          JsonVariant doc) {
-    if (path == "light" || path == "light_presets")
+    if (path == "light" || path == "light_presets") {
+        parentNode->runs(std::bind(&ConfigManager::_init_get, this, std::placeholders::_1, std::placeholders::_2, doc));
         return;
+    }
     if (variant.is<bool>()) {
         parentNode->then(_init_boolean(path, doc));
         parentNode->runs(std::bind(&ConfigManager::_init_get, this, std::placeholders::_1, std::placeholders::_2, doc));
         return;
     } else if (variant.is<const char *>()) {
         parentNode->then(_init_stringer(path, doc));
+        parentNode->runs(std::bind(&ConfigManager::_init_get, this, std::placeholders::_1, std::placeholders::_2, doc));
         return;
     } else if (variant.is<int>()) {
         parentNode->then(_init_inter(path, doc));
+        parentNode->runs(std::bind(&ConfigManager::_init_get, this, std::placeholders::_1, std::placeholders::_2, doc));
         return;
     } else if (variant.is<JsonObject>())
         for (JsonPair kv: variant.as<JsonObject>()) {
@@ -185,20 +189,22 @@ void ConfigManager::command_initialize() {
 
     CommandNode *literal = superCube->command_registry->Literal("config");
     literal->then(
-            superCube->command_registry->Literal("get")->runs([this](std::unique_ptr<Shell> shell, const R &context) {
-                String output;
-                serializeMsgPack(configDoc, output);
-                shell->println(output.c_str());
+            superCube->command_registry->Literal("getm")->runs([this](Shell *shell, const R &context) {
+                uint8_t output[512];
+                size_t dataLength = serializeMsgPack(configDoc, output);
+
+                String base64Str = base64::encode(output, dataLength);
+                shell->println(base64Str.c_str());
             })
     );
     literal->then(
-            superCube->command_registry->Literal("gets")->runs([this](std::unique_ptr<Shell> shell, const R &context) {
+            superCube->command_registry->Literal("get")->runs([this](Shell *shell, const R &context) {
                 shell->println(superCube->config_manager->getConfig().as<String>().c_str());
             })
     );
 
     literal->then(superCube->command_registry->Literal("setFromJson")->runs(
-            [this](std::unique_ptr<Shell> shell, const R &context) {
+            [this](Shell *shell, const R &context) {
                 if (shell->isNetworkFlag()) {
                     superCube->config_manager->clear();
                     superCube->config_manager->clearConfigDoc();

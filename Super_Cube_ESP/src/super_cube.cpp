@@ -28,7 +28,7 @@ super_cube::~super_cube() {
     delete serialHandler, serialHandler = nullptr;
     delete config_manager, config_manager = nullptr;
     httpServer.reset();
-    webSocketService.reset();
+//    webSocketService.reset();
     mqttService.reset();
     lightHandler.reset();
     attitudeService.reset();
@@ -38,18 +38,18 @@ void super_cube::releaseResource() {
     attitudeService.reset();
     if (config_manager->getConfig()["serverMode"] != "Http")
         httpServer.reset();
-    if (config_manager->getConfig()["serverMode"] != "Websocket")
-        webSocketService.reset();
+//    if (config_manager->getConfig()["serverMode"] != "Websocket")
+//        webSocketService.reset();
     if (config_manager->getConfig()["serverMode"] != "Mqtt")
         mqttService.reset();
 }
 
 void super_cube::setupModule() {
-    if (config_manager->getConfig()["Attitude"]["enable"]) {
+    if (config_manager->getConfig()["Attitude"]["enable"] && attitudeService == nullptr) {
         attitudeService = std::make_unique<AttitudeService>(this);
         attitudeService->setup();
     }
-    if (config_manager->getConfig()["serverMode"] == "Http") {
+    if (config_manager->getConfig()["serverMode"] == "Http" && httpServer == nullptr) {
         debugln("\n[DEBUG] Mode has been select as Http");
         debugln("[DEBUG] Starting HTTP Server...");
         httpServer = std::make_unique<HttpServer>(this,
@@ -57,16 +57,16 @@ void super_cube::setupModule() {
         httpServer->start();
         debugln("[DEBUG] HTTP Server Started, Listening...");
     }
-    if (config_manager->getConfig()["serverMode"] == "Websocket") {
-        webSocketService = std::make_unique<WebSocketService>(this,
-                                                              static_cast<String>(config_manager->getConfig()["Websocket"]["ip"].as<String>()),
-                                                              static_cast<int>(config_manager->getConfig()["Websocket"]["port"].as<int>()));
-        debugln("\n[DEBUG] Mode has been select as Websocket");
-        debugln("[DEBUG] Starting Websocket Server...");
-        webSocketService->start();
-        debugln("[DEBUG] Websocket Server Started, Listening...");
-    }
-    if (config_manager->getConfig()["serverMode"] == "Mqtt") {
+//    if (config_manager->getConfig()["serverMode"] == "Websocket") {
+//        webSocketService = std::make_unique<WebSocketService>(this,
+//                                                              static_cast<String>(config_manager->getConfig()["Websocket"]["ip"].as<String>()),
+//                                                              static_cast<int>(config_manager->getConfig()["Websocket"]["port"].as<int>()));
+//        debugln("\n[DEBUG] Mode has been select as Websocket");
+//        debugln("[DEBUG] Starting Websocket Server...");
+////        webSocketService->start();
+//        debugln("[DEBUG] Websocket Server Started, Listening...");
+//    }
+    if (config_manager->getConfig()["serverMode"] == "Mqtt" && mqttService == nullptr) {
         mqttService = std::make_unique<MqttService>(this,
                                                     static_cast<String>(config_manager->getConfig()["Mqtt"]["ip"].as<String>()),
                                                     static_cast<int>(config_manager->getConfig()["Mqtt"]["port"].as<int>()),
@@ -103,7 +103,7 @@ void super_cube::setup() {
     _connectWiFi(config_manager->getConfig()["Internet"]["ssid"], config_manager->getConfig()["Internet"]["passwd"]);
     command_registry->register_command(std::unique_ptr<CommandNode>(command_registry->Literal("asdf")->then(
             command_registry->Literal("f")->then(
-                    command_registry->IntegerParam("value")->runs([](std::unique_ptr<Shell> shell, const R &context) {
+                    command_registry->IntegerParam("value")->runs([](Shell *shell, const R &context) {
                         shell->println(std::to_string(context.get<int>("value")).c_str());
                     })))));
     setupModule();
@@ -114,12 +114,12 @@ void super_cube::loop() {
     serialHandler->handleSerial();
     if (config_manager->getConfig()["Attitude"]["enable"] && attitudeService != nullptr)
         attitudeService->loop();
-    if (config_manager->getConfig()["serverMode"] == "Http" && webSocketService->webSocket != nullptr) {
-        httpServer->handleClient();
-    }
-    if (config_manager->getConfig()["serverMode"] == "Websocket" && webSocketService->webSocket != nullptr) {
-        webSocketService->webSocket->loop();
-    }
+//    if (config_manager->getConfig()["serverMode"] == "Http" && webSocketService->webSocket != nullptr) {
+//        httpServer->handleClient();
+//    }
+//    if (config_manager->getConfig()["serverMode"] == "Websocket" && webSocketService->webSocket != nullptr) {
+//        webSocketService->webSocket->loop();
+//    }
     if (config_manager->getConfig()["serverMode"] == "Mqtt" && mqttService->mqttClient != nullptr) {
         mqttService->loop();
     }
@@ -128,7 +128,17 @@ void super_cube::loop() {
 void super_cube::_command_register() const {
     command_registry->register_command(
             std::unique_ptr<CommandNode>(
-                    command_registry->Literal("memory")->runs([](std::unique_ptr<Shell> shell, const R &context) {
+                    command_registry->Literal("setupModule")->runs([](Shell *shell, const R &context) {
+                        shell->getSuperCube()->setupModule();
+                    })));
+    command_registry->register_command(
+            std::unique_ptr<CommandNode>(
+                    command_registry->Literal("release")->runs([](Shell *shell, const R &context) {
+                        shell->getSuperCube()->releaseResource();
+                    })));
+    command_registry->register_command(
+            std::unique_ptr<CommandNode>(
+                    command_registry->Literal("memory")->runs([](Shell *shell, const R &context) {
                         size_t freeHeap = EspClass::getFreeHeap();
                         size_t usedHeap = TOTAL_HEAP - freeHeap;
                         {
@@ -155,8 +165,8 @@ void super_cube::_command_register() const {
                             modules.emplace_back("config_manager", sizeof(*(sc->config_manager)));
                         if (sc->httpServer != nullptr)
                             modules.emplace_back("httpServer", sizeof(*(sc->httpServer)));
-                        if (sc->webSocketService != nullptr)
-                            modules.emplace_back("webSocketService", sizeof(*(sc->webSocketService)));
+//                        if (sc->webSocketService != nullptr)
+//                            modules.emplace_back("webSocketService", sizeof(*(sc->webSocketService)));
                         if (sc->mqttService != nullptr)
                             modules.emplace_back("mqttService", sizeof(*(sc->mqttService)));
                         if (sc->lightHandler != nullptr)
@@ -179,18 +189,18 @@ void super_cube::_command_register() const {
                     })));
     command_registry->register_command(
             std::unique_ptr<CommandNode>(
-                    command_registry->Literal("restart")->runs([](std::unique_ptr<Shell> shell, const R &context) {
+                    command_registry->Literal("restart")->runs([](Shell *shell, const R &context) {
                         EspClass::restart();
                     })));
     command_registry->register_command(
             std::unique_ptr<CommandNode>(
-                    command_registry->Literal("commandtree")->runs([](std::unique_ptr<Shell> shell, const R &context) {
+                    command_registry->Literal("commandtree")->runs([](Shell *shell, const R &context) {
                         shell->getSuperCube()->command_registry->printCommandTree();
                     })));
     command_registry->register_command(
             std::unique_ptr<CommandNode>(
                     command_registry->Literal("Server_NeoPixel")->runs(
-                            [](std::unique_ptr<Shell> shelll, const R &context) {
+                            [](Shell *shelll, const R &context) {
                                 // {"command": "Server_NeoPixel", "pin": 1, "r": 255, "g": 255, "b": 255, "bright": 255, "num": ["0-3"]}
                                 // {"command": "Server_NeoPixel", "presets": ""}
                                 std::map<int, const uint8_t> pinMap = {

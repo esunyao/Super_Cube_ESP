@@ -141,89 +141,117 @@ void AttitudeService::OffsetSet(int16_t XG, int16_t YG, int16_t ZG, int16_t XA, 
 
 JsonDocument AttitudeService::GetData(bool out_put, const String &mode) {
     JsonDocument jsdoc = JsonDocument();
-    std::map<String, int> modeMap = {
-            {"OUTPUT_READABLE_QUATERNION",   1},       // 四元数分量
-            {"OUTPUT_READABLE_EULER",        2},       // 欧拉角
-            {"OUTPUT_READABLE_YAWPITCHROLL", 3},       // 偏航/俯仰/滚转角
-            {"OUTPUT_READABLE_REALACCEL",    4},       // 输出去除重力后的加速度分量
-            {"OUTPUT_INIT",                  5}
-    };
-    Quaternion q;           // [w, x, y, z]         四元数容器
-    VectorInt16 aa;         // [x, y, z]            加速度传感器测量值
-    VectorInt16 aaReal;     // [x, y, z]            去除重力的加速度传感器测量值
-    VectorFloat gravity;    // [x, y, z]            重力向量
-    float euler[3];         // [psi, theta, phi]    欧拉角容器
-    float ypr[3];           // [yaw, pitch, roll]   偏航/俯仰/滚转容器和重力向量
-    int16_t ax, ay, az;
-    int16_t gx, gy, gz;
-    if (mpu->dmpGetCurrentFIFOPacket(FIFOBuffer.get())) {   // 修改：传入 FIFOBuffer.get()
-        switch (modeMap[mode]) {
-            case 1:
-                mpu->dmpGetQuaternion(&q, FIFOBuffer.get());  // 修改：FIFOBuffer.get()
-                jsdoc["quat"] = JsonVariant();
-                jsdoc["quat"]["w"] = q.w;
-                jsdoc["quat"]["x"] = q.x;
-                jsdoc["quat"]["y"] = q.y;
-                jsdoc["quat"]["z"] = q.z;
-                if (out_put)
-                    superCube->serial->println(
-                            "[MPU] quat\t" + String(q.w) + "\t" + String(q.x) + "\t" + String(q.y) + "\t" +
-                            String(q.z));
-                break;
-            case 2:
-                mpu->dmpGetQuaternion(&q, FIFOBuffer.get());  // 修改：FIFOBuffer.get()
-                mpu->dmpGetEuler(euler, &q);
-                jsdoc["euler"] = JsonVariant();
-                jsdoc["euler"]["psi"] = euler[0] * 180 / M_PI;
-                jsdoc["euler"]["theta"] = euler[1] * 180 / M_PI;
-                jsdoc["euler"]["phi"] = euler[2] * 180 / M_PI;
-                superCube->serial->println("[MPU] 0: " + String(euler[0] * 180 / M_PI));
-                superCube->serial->println("[MPU] 1: " + String(euler[1] * 180 / M_PI));
-                superCube->serial->println("[MPU] 2: " + String(euler[2] * 180 / M_PI));
-                if (out_put)
-                    superCube->serial->println(
-                            "[MPU] euler\t" + String(euler[0] * 180 / M_PI) + "\t" + String(euler[1] * 180 / M_PI) +
-                            "\t" +
-                            String(euler[2] * 180 / M_PI));
-                break;
-            case 3:
-                mpu->dmpGetQuaternion(&q, FIFOBuffer.get());  // 修改：FIFOBuffer.get()
-                mpu->dmpGetGravity(&gravity, &q);
-                mpu->dmpGetYawPitchRoll(ypr, &q, &gravity);
-                jsdoc["ypr"] = JsonVariant();
-                jsdoc["ypr"]["yaw"] = ypr[0] * 180 / M_PI;
-                jsdoc["ypr"]["pitch"] = ypr[1] * 180 / M_PI;
-                jsdoc["ypr"]["roll"] = ypr[2] * 180 / M_PI;
-                if (out_put)
-                    superCube->serial->println(
-                            "[MPU] ypr\t" + String(ypr[0] * 180 / M_PI) + "\t" + String(ypr[1] * 180 / M_PI) + "\t" +
-                            String(ypr[2] * 180 / M_PI));
-                break;
-            case 4:
-                mpu->dmpGetQuaternion(&q, FIFOBuffer.get());  // 修改：FIFOBuffer.get()
-                mpu->dmpGetAccel(&aa, FIFOBuffer.get());        // 修改：FIFOBuffer.get()
-                mpu->dmpGetGravity(&gravity, &q);
-                mpu->dmpGetLinearAccel(&aaReal, &aa, &gravity);
-                jsdoc["areal"] = JsonVariant();
-                jsdoc["areal"]["x"] = aaReal.x;
-                jsdoc["areal"]["y"] = aaReal.y;
-                jsdoc["areal"]["z"] = aaReal.z;
-                if (out_put)
-                    superCube->serial->println(
-                            "[MPU] areal\t" + String(aaReal.x) + "\t" + String(aaReal.y) + "\t" + String(aaReal.z));
-                break;
-            case 5:
-                mpu->getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-                jsdoc["motion"] = JsonVariant();
-                jsdoc["motion"]["ax"] = ax;
-                jsdoc["motion"]["ay"] = ay;
-                jsdoc["motion"]["az"] = az;
-                jsdoc["motion"]["gx"] = gx;
-                jsdoc["motion"]["gy"] = gy;
-                jsdoc["motion"]["gz"] = gz;
+    if (consoleMode) {
+        JsonDocument jsdoc = JsonDocument();
+        jsdoc["Acc"] = JsonVariant();
+        jsdoc["Acc"]["x"] = Acc[0];
+        jsdoc["Acc"]["y"] = Acc[1];
+        jsdoc["Acc"]["z"] = Acc[2];
+        jsdoc["Gyro"] = JsonVariant();
+        jsdoc["Gyro"]["x"] = Gyro[0];
+        jsdoc["Gyro"]["y"] = Gyro[1];
+        jsdoc["Gyro"]["z"] = Gyro[2];
+        jsdoc["Angle"] = JsonVariant();
+        jsdoc["Angle"]["x"] = Angle[0];
+        jsdoc["Angle"]["y"] = Angle[1];
+        jsdoc["Angle"]["z"] = Angle[2];
+        jsdoc["Mag"] = JsonVariant();
+        jsdoc["Mag"]["x"] = Mag[0];
+        jsdoc["Mag"]["y"] = Mag[1];
+        jsdoc["Mag"]["z"] = Mag[2];
+        if (out_put)
+            superCube->serial->println(
+                    "[JY] Acc: " + String(Acc[0]) + "\t" + String(Acc[1]) + "\t" + String(Acc[2]) + "\t" +
+                    "\n[JY] Gyro: " + String(Gyro[0]) + "\t" + String(Gyro[1]) + "\t" + String(Gyro[2]) + "\t" +
+                    "\n[JY] Angle: " + String(Angle[0]) + "\t" + String(Angle[1]) + "\t" + String(Angle[2]) + "\t" +
+                    "\n[JY] Mag: " + String(Mag[0]) + "\t" + String(Mag[1]) + "\t" + String(Mag[2]));
+        return jsdoc;
+    } else {
+        std::map<String, int> modeMap = {
+                {"OUTPUT_READABLE_QUATERNION",   1},       // 四元数分量
+                {"OUTPUT_READABLE_EULER",        2},       // 欧拉角
+                {"OUTPUT_READABLE_YAWPITCHROLL", 3},       // 偏航/俯仰/滚转角
+                {"OUTPUT_READABLE_REALACCEL",    4},       // 输出去除重力后的加速度分量
+                {"OUTPUT_INIT",                  5}
+        };
+        Quaternion q;           // [w, x, y, z]         四元数容器
+        VectorInt16 aa;         // [x, y, z]            加速度传感器测量值
+        VectorInt16 aaReal;     // [x, y, z]            去除重力的加速度传感器测量值
+        VectorFloat gravity;    // [x, y, z]            重力向量
+        float euler[3];         // [psi, theta, phi]    欧拉角容器
+        float ypr[3];           // [yaw, pitch, roll]   偏航/俯仰/滚转容器和重力向量
+        int16_t ax, ay, az;
+        int16_t gx, gy, gz;
+        if (mpu->dmpGetCurrentFIFOPacket(FIFOBuffer.get())) {   // 修改：传入 FIFOBuffer.get()
+            switch (modeMap[mode]) {
+                case 1:
+                    mpu->dmpGetQuaternion(&q, FIFOBuffer.get());  // 修改：FIFOBuffer.get()
+                    jsdoc["quat"] = JsonVariant();
+                    jsdoc["quat"]["w"] = q.w;
+                    jsdoc["quat"]["x"] = q.x;
+                    jsdoc["quat"]["y"] = q.y;
+                    jsdoc["quat"]["z"] = q.z;
+                    if (out_put)
+                        superCube->serial->println(
+                                "[MPU] quat\t" + String(q.w) + "\t" + String(q.x) + "\t" + String(q.y) + "\t" +
+                                String(q.z));
+                    break;
+                case 2:
+                    mpu->dmpGetQuaternion(&q, FIFOBuffer.get());  // 修改：FIFOBuffer.get()
+                    mpu->dmpGetEuler(euler, &q);
+                    jsdoc["euler"] = JsonVariant();
+                    jsdoc["euler"]["psi"] = euler[0] * 180 / M_PI;
+                    jsdoc["euler"]["theta"] = euler[1] * 180 / M_PI;
+                    jsdoc["euler"]["phi"] = euler[2] * 180 / M_PI;
+                    superCube->serial->println("[MPU] 0: " + String(euler[0] * 180 / M_PI));
+                    superCube->serial->println("[MPU] 1: " + String(euler[1] * 180 / M_PI));
+                    superCube->serial->println("[MPU] 2: " + String(euler[2] * 180 / M_PI));
+                    if (out_put)
+                        superCube->serial->println(
+                                "[MPU] euler\t" + String(euler[0] * 180 / M_PI) + "\t" + String(euler[1] * 180 / M_PI) +
+                                "\t" +
+                                String(euler[2] * 180 / M_PI));
+                    break;
+                case 3:
+                    mpu->dmpGetQuaternion(&q, FIFOBuffer.get());  // 修改：FIFOBuffer.get()
+                    mpu->dmpGetGravity(&gravity, &q);
+                    mpu->dmpGetYawPitchRoll(ypr, &q, &gravity);
+                    jsdoc["ypr"] = JsonVariant();
+                    jsdoc["ypr"]["yaw"] = ypr[0] * 180 / M_PI;
+                    jsdoc["ypr"]["pitch"] = ypr[1] * 180 / M_PI;
+                    jsdoc["ypr"]["roll"] = ypr[2] * 180 / M_PI;
+                    if (out_put)
+                        superCube->serial->println(
+                                "[MPU] ypr\t" + String(ypr[0] * 180 / M_PI) + "\t" + String(ypr[1] * 180 / M_PI) +
+                                "\t" +
+                                String(ypr[2] * 180 / M_PI));
+                    break;
+                case 4:
+                    mpu->dmpGetQuaternion(&q, FIFOBuffer.get());  // 修改：FIFOBuffer.get()
+                    mpu->dmpGetAccel(&aa, FIFOBuffer.get());        // 修改：FIFOBuffer.get()
+                    mpu->dmpGetGravity(&gravity, &q);
+                    mpu->dmpGetLinearAccel(&aaReal, &aa, &gravity);
+                    jsdoc["areal"] = JsonVariant();
+                    jsdoc["areal"]["x"] = aaReal.x;
+                    jsdoc["areal"]["y"] = aaReal.y;
+                    jsdoc["areal"]["z"] = aaReal.z;
+                    if (out_put)
+                        superCube->serial->println(
+                                "[MPU] areal\t" + String(aaReal.x) + "\t" + String(aaReal.y) + "\t" + String(aaReal.z));
+                    break;
+                case 5:
+                    mpu->getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+                    jsdoc["motion"] = JsonVariant();
+                    jsdoc["motion"]["ax"] = ax;
+                    jsdoc["motion"]["ay"] = ay;
+                    jsdoc["motion"]["az"] = az;
+                    jsdoc["motion"]["gx"] = gx;
+                    jsdoc["motion"]["gy"] = gy;
+                    jsdoc["motion"]["gz"] = gz;
+            }
         }
+        return jsdoc;
     }
-    return jsdoc;
 }
 
 void AttitudeService::SensorUartSend(uint8_t *p_data, uint32_t uiSize) {
@@ -320,7 +348,7 @@ void AttitudeService::InitializeCommand() {
         superCube->command_registry->register_command(
                 std::unique_ptr<CommandNode>(superCube->command_registry->Literal("Server_posture")->then(
                                 superCube->command_registry->Literal("get")->runs(
-                                        [this](std::unique_ptr<Shell> shelll, const R &context) {
+                                        [this](Shell *shelll, const R &context) {
                                             bool out_put = false;
                                             if (shelll->jsonDoc["out_put"].is<bool>())
                                                 out_put = shelll->jsonDoc["out_put"];
@@ -337,24 +365,24 @@ void AttitudeService::InitializeCommand() {
                                                 shelll->println("only Support Mqtt");
                                         }))
                                                      ->then(superCube->command_registry->Literal("getDevStatus")->runs(
-                                                             [this](std::unique_ptr<Shell> shelll, const R &context) {
+                                                             [this](Shell *shelll, const R &context) {
                                                                  shelll->getSuperCube()->debugln("[MPU]",
                                                                                                  shelll->getSuperCube()->attitudeService->getDevStatus());
                                                              }))
                                                      ->then(superCube->command_registry->Literal(
                                                              "getReadyStatus")->runs(
-                                                             [this](std::unique_ptr<Shell> shelll, const R &context) {
+                                                             [this](Shell *shelll, const R &context) {
                                                                  shelll->getSuperCube()->debugln("[MPU]",
                                                                                                  shelll->getSuperCube()->attitudeService->getReadyStatus());
                                                              }))
                                                      ->then(superCube->command_registry->Literal(
                                                              "ConnectionTest")->runs(
-                                                             [this](std::unique_ptr<Shell> shelll, const R &context) {
+                                                             [this](Shell *shelll, const R &context) {
                                                                  shelll->getSuperCube()->debugln("[MPU]",
                                                                                                  shelll->getSuperCube()->attitudeService->ConnectionTest());
                                                              }))
                                                      ->then(superCube->command_registry->Literal("StartDmp")->runs(
-                                                             [this](std::unique_ptr<Shell> shelll, const R &context) {
+                                                             [this](Shell *shelll, const R &context) {
                                                                  shelll->getSuperCube()->debugln("[MPU]",
                                                                                                  shelll->getSuperCube()->attitudeService->StartDmp());
                                                              }))
@@ -362,39 +390,40 @@ void AttitudeService::InitializeCommand() {
     else if (superCube->config_manager->getConfig()["Attitude"]["MODE"].as<String>() == "JY901L")
         superCube->command_registry->register_command(
                 std::unique_ptr<CommandNode>(superCube->command_registry->Literal("Server_posture")
-//                ->then(
-//                                superCube->command_registry->Literal("get")->runs(
-//                                        [this](std::unique_ptr<Shell> shelll, const R &context) {
-//                                            bool out_put = false;
-//                                            if (shelll->jsonDoc["out_put"].is<bool>())
-//                                                out_put = shelll->jsonDoc["out_put"];
-//                                            JsonDocument data = shelll->getSuperCube()->attitudeService->GetData(
-//                                                    out_put,
-//                                                    shelll->jsonDoc["mode"].as<String>());
-//                                            String dataStr;
-//                                            serializeJson(data, dataStr);
-//                                            if (shelll->getSuperCube() || shelll->isFlag(Shell::Flags::MQTT))
-//                                                shelll->getSuperCube()->mqttService->publishMessage(dataStr,
-//                                                                                                    shelll->getSuperCube()->config_manager->getConfig()["Mqtt"]["attitude_topic"].as<String>() +
-//                                                                                                    shelll->getSuperCube()->config_manager->getConfig()["ID"].as<String>());
-//                                            else
-//                                                shelll->println("only Support Mqtt");
-//                                        }))
+                                                     ->then(
+                                                             superCube->command_registry->Literal("get")->runs(
+                                                                     [this](Shell *shelll, const R &context) {
+                                                                         bool out_put = false;
+                                                                         if (shelll->jsonDoc["out_put"].is<bool>())
+                                                                             out_put = shelll->jsonDoc["out_put"];
+                                                                         JsonDocument data = shelll->getSuperCube()->attitudeService->GetData(
+                                                                                 out_put, "");
+                                                                         String dataStr;
+                                                                         serializeJson(data, dataStr);
+                                                                         if (shelll->getSuperCube() ||
+                                                                             shelll->isFlag(Shell::Flags::MQTT))
+                                                                             shelll->getSuperCube()->mqttService->publishMessage(
+                                                                                     dataStr,
+                                                                                     shelll->getSuperCube()->config_manager->getConfig()["Mqtt"]["attitude_topic"].as<String>() +
+                                                                                     shelll->getSuperCube()->config_manager->getConfig()["ID"].as<String>());
+                                                                         else
+                                                                             shelll->println("only Support Mqtt");
+                                                                     }))
                                                      ->then(superCube->command_registry->Literal("cmd")
                                                                     ->runs(
-                                                                            [this](std::unique_ptr<Shell> shell,
+                                                                            [this](Shell *shell,
                                                                                    const R &context) {
-                                                                                CmdProcess('h', std::move(shell));
+                                                                                CmdProcess('h', shell);
                                                                             })
                                                                     ->then(superCube->command_registry->StringParam(
                                                                                     "_command")
                                                                                    ->runs([this](
-                                                                                           std::unique_ptr<Shell> shell,
+                                                                                           Shell *shell,
                                                                                            const R &context) {
                                                                                        CmdProcess(
                                                                                                context.get<std::string>(
                                                                                                        "_command")[0],
-                                                                                               std::move(shell));
+                                                                                               shell);
                                                                                    })))
                 ));
 }
@@ -418,7 +447,7 @@ void AttitudeService::JYUpdate() {
     jsdoc["Mag"]["y"] = Mag[1];
     jsdoc["Mag"]["z"] = Mag[2];
     String dataStr;
-    serializeMsgPack(jsdoc, dataStr);
+    serializeJson(jsdoc, dataStr);
     superCube->adebugln(jsdoc.as<String>());
     if (superCube->mqttService != nullptr)
         superCube->mqttService->publishMessage(dataStr,
@@ -426,7 +455,7 @@ void AttitudeService::JYUpdate() {
                                                superCube->config_manager->getConfig()["ID"].as<String>());
 }
 
-void AttitudeService::CmdProcess(char s_cCmd, std::unique_ptr<Shell> shell) {
+void AttitudeService::CmdProcess(char s_cCmd, Shell *shell) {
     switch (s_cCmd) {
         case 'a':
             if (WitStartAccCali() != WIT_HAL_OK)

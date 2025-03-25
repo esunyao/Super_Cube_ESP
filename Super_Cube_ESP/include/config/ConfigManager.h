@@ -69,7 +69,7 @@ protected:
 
     CommandNode *_init_inter(std::string node, JsonVariant doc);
 
-    void _init_get(std::unique_ptr<Shell> shell, const R &context, JsonVariant doc);
+    void _init_get(Shell *shell, const R &context, JsonVariant doc);
 
     template<typename T>
     CommandNode *_init_generic(std::string node, JsonVariant doc, std::function<void(JsonVariant, T)> setter);
@@ -90,6 +90,7 @@ private:
                             {"HTTPDEBUG",     {}},
                             {"MQTTDEBUG",     {}},
                             {"DEBUG",         {}},
+                            {"ATTITUDEDEBUG", {}},
                             {"ID",            {}},
                             {"Internet",      {"ssid",   "passwd"}},
                             {"http",          {"port"}},

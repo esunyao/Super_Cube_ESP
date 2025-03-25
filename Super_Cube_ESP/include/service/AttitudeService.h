@@ -70,7 +70,7 @@ private:
     // 禁止编译器对此变量进行优化（如缓存到寄存器），确保每次访问都直接读写内存。
     static volatile uint8_t s_cDataUpdate;
 
-    void CmdProcess(char s_cCmd, std::unique_ptr<Shell> shell);
+    void CmdProcess(char s_cCmd, Shell *shell);
 
     float Acc[3], Gyro[3], Angle[3], Mag[3];
     // 共用类
