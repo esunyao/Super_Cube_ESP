@@ -101,11 +101,6 @@ void super_cube::setup() {
     lightHandler.reset();
     debugln("[DEBUG] Config: ", config_manager->getConfig().as<String>());
     _connectWiFi(config_manager->getConfig()["Internet"]["ssid"], config_manager->getConfig()["Internet"]["passwd"]);
-    command_registry->register_command(std::unique_ptr<CommandNode>(command_registry->Literal("asdf")->then(
-            command_registry->Literal("f")->then(
-                    command_registry->IntegerParam("value")->runs([](Shell *shell, const R &context) {
-                        shell->println(std::to_string(context.get<int>("value")).c_str());
-                    })))));
     setupModule();
 }
 
@@ -216,9 +211,9 @@ void super_cube::_command_register() const {
                                         shelll->getSuperCube()->config_manager->saveConfig();
                                         shelll->getSuperCube()->debugln("Saved");
                                     }
-                                if (shelll->jsonDoc.operator[]("presets").is<std::string>()) {
+                                if (shelll->jsonDoc.operator[]("presets").is<String>()) {
                                     JsonObject presets = shelll->getSuperCube()->config_manager->getConfig()["light_presets"][shelll->jsonDoc.operator[](
-                                            "presets").as<std::string>()];
+                                            "presets").as<String>()];
                                     shelll->jsonDoc.operator[]("r") = presets["r"];
                                     shelll->jsonDoc.operator[]("g") = presets["g"];
                                     shelll->jsonDoc.operator[]("b") = presets["b"];
@@ -262,8 +257,8 @@ void super_cube::_command_register() const {
                                                                             0));
                                         else {
                                             std::regex pattern(R"((\d+)-(\d+))");
-                                            std::smatch matches;
-                                            std::string str = v.as<String>().c_str();
+                                            std::cmatch matches;
+                                            const char *str = v.as<String>().c_str();
                                             if (std::regex_search(str, matches, pattern))
                                                 for (int i = std::stoi(matches[1].str());
                                                      i <= std::stoi(matches[2].str()); i++)
@@ -283,7 +278,7 @@ void super_cube::_command_register() const {
                                     shelll->getSuperCube()->adafruitNeoPixel.reset();
                                     shelll->println("Lighting up");
                                     return;
-                                }else {
+                                } else {
                                     shelll->getSuperCube()->adafruitNeoPixel = std::move(stripasd);
                                     shelll->println("Setting up");
                                 }

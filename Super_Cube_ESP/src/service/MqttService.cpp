@@ -113,13 +113,13 @@ void MqttService::handleMessage(char *topic, byte *payload, unsigned int length)
     DeserializationError error = deserializeJson(jsonDoc, requestBody);
     if (!error) {
         superCube->debugln("[MqttServer][", topic, "] ", jsonDoc.as<String>());
-        if (jsonDoc["devices"].is<std::string>())
-            if (!(jsonDoc["devices"].as<std::string>() ==
-                  superCube->config_manager->getConfig()["ID"].as<std::string>())) {
+        if (jsonDoc["devices"].is<String>())
+            if (!(jsonDoc["devices"].as<String>() ==
+                  superCube->config_manager->getConfig()["ID"].as<String>())) {
                 superCube->mdebugln("[MqttServer] Device ID not match, ignore.");
                 return;
             }
-        if (jsonDoc.operator[]("command").is<std::string>()) {
+        if (jsonDoc.operator[]("command").is<String>()) {
             superCube->mdebugln("[MqttServer] Command: ", jsonDoc.operator[]("command").as<String>());
             std::unique_ptr<Shell> shell = std::make_unique<Shell>(superCube, Shell::Flags::MQTT);
             shell->setup();
@@ -127,11 +127,11 @@ void MqttService::handleMessage(char *topic, byte *payload, unsigned int length)
             if (strcmp(topic, superCube->config_manager->getConfig()["Mqtt"]["topic"].as<const char *>()) == 0)
                 publishMessage(superCube->command_registry->execute_command(std::move(shell),
                                                                             jsonDoc.operator[](
-                                                                                    "command").as<std::string>())->res);
+                                                                                    "command").as<String>())->res);
             else
                 publishMessage(superCube->command_registry->execute_command(std::move(shell),
                                                                             jsonDoc.operator[](
-                                                                                    "command").as<std::string>())->res,
+                                                                                    "command").as<String>())->res,
                                superCube->config_manager->getConfig()["Mqtt"]["callback_topic"].as<String>() + "/" +
                                superCube->config_manager->getConfig()["ID"].as<String>());
         }

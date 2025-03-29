@@ -421,7 +421,7 @@ void AttitudeService::InitializeCommand() {
                                                                                            Shell *shell,
                                                                                            const R &context) {
                                                                                        CmdProcess(
-                                                                                               context.get<std::string>(
+                                                                                               context.get<String>(
                                                                                                        "_command")[0],
                                                                                                shell);
                                                                                    })))

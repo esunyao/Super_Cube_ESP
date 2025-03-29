@@ -7,8 +7,8 @@
 
 // TCP配置
 #define TCP_WND                  500
-#define TCP_SND_BUF              800
-#define TCP_RCV_BUF              1000
+#define TCP_SND_BUF              700
+#define TCP_RCV_BUF              700
 #define MEMP_NUM_TCP_PCB         2
 
 // DNS配置

@@ -3,40 +3,40 @@
 //
 #include "command/builder/tools.h"
 // Implementation of Literal class
-Literal::Literal(const std::string &name) : name(name) {}
+Literal::Literal(const String &name) : name(name) {}
 
 void Literal::add_child(std::unique_ptr<AbstractNode> child) {
     // Implement child management (e.g., store children in a vector or map)
 }
 
 void Literal::print_tree(int depth) const {
-    std::cout << std::string(depth, ' ') << "Literal: " << name << "\n";
+    std::cout << std::string(depth, ' ') << "Literal: " << name.c_str() << "\n";
 }
 
 // Implementation of ArgumentNode class
-ArgumentNode::ArgumentNode(const std::string &name) : name(name) {}
+ArgumentNode::ArgumentNode(const String &name) : name(name) {}
 
 void ArgumentNode::add_child(std::unique_ptr<AbstractNode> child) {
     // Implement child management (e.g., store children in a vector or map)
 }
 
 void ArgumentNode::print_tree(int depth) const {
-    std::cout << std::string(depth, ' ') << "Argument: " << name << "\n";
+    std::cout << std::string(depth, ' ') << "Argument: " << name.c_str() << "\n";
 }
 
 // Implementation of SimpleCommandBuilder methods
 
-void SimpleCommandBuilder::command(const std::string &command_str, CommandCallback callback) {
+void SimpleCommandBuilder::command(const String &command_str, CommandCallback callback) {
     commands[command_str] = callback;
 }
 
-void SimpleCommandBuilder::arg(const std::string &arg_name, std::function<std::unique_ptr<AbstractNode>(const std::string&)> node_factory) {
+void SimpleCommandBuilder::arg(const String &arg_name, std::function<std::unique_ptr<AbstractNode>(const String&)> node_factory) {
     arguments[arg_name] = node_factory;
 }
 
-void SimpleCommandBuilder::literal(const std::string &literal_name, std::function<std::unique_ptr<AbstractNode>(const std::string&)> node_factory) {
+void SimpleCommandBuilder::literal(const String &literal_name, std::function<std::unique_ptr<AbstractNode>(const String&)> node_factory) {
     if (node_factory == nullptr) {
-        node_factory = [](const std::string &name) {
+        node_factory = [](const String &name) {
             return std::make_unique<Literal>(name);
         };
     }

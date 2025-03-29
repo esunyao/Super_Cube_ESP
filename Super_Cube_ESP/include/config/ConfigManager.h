@@ -20,22 +20,22 @@ class CommandNode;
 
 template<typename T>
 struct TypeName {
-    static std::string get() { return "unknown"; }
+    static String get() { return "unknown"; }
 };
 
 template<>
 struct TypeName<int> {
-    static std::string get() { return "Int"; }
+    static String get() { return "Int"; }
 };
 
 template<>
-struct TypeName<std::string> {
-    static std::string get() { return "String"; }
+struct TypeName<String> {
+    static String get() { return "String"; }
 };
 
 template<>
 struct TypeName<bool> {
-    static std::string get() { return "Bool"; }
+    static String get() { return "Bool"; }
 };
 
 class ConfigManager {
@@ -63,16 +63,16 @@ public:
     void command_initialize();
 
 protected:
-    CommandNode *_init_stringer(std::string node, JsonVariant doc);
+    CommandNode *_init_stringer(String node, JsonVariant doc);
 
-    CommandNode *_init_boolean(std::string node, JsonVariant doc);
+    CommandNode *_init_boolean(String node, JsonVariant doc);
 
-    CommandNode *_init_inter(std::string node, JsonVariant doc);
+    CommandNode *_init_inter(String node, JsonVariant doc);
 
     void _init_get(Shell *shell, const R &context, JsonVariant doc);
 
     template<typename T>
-    CommandNode *_init_generic(std::string node, JsonVariant doc, std::function<void(JsonVariant, T)> setter);
+    CommandNode *_init_generic(String node, JsonVariant doc, std::function<void(JsonVariant, T)> setter);
 
 private:
     int eepromSize;
@@ -83,9 +83,9 @@ private:
 
     void clearConfigDoc();
 
-    std::unique_ptr<std::map<std::string, std::vector<std::string>>> requiredKeys =
-            std::make_unique<std::map<std::string, std::vector<std::string>>>(
-                    std::map<std::string, std::vector<std::string>>{
+    std::unique_ptr<std::map<String, std::vector<String>>> requiredKeys =
+            std::make_unique<std::map<String, std::vector<String>>>(
+                    std::map<String, std::vector<String>>{
                             {"reset",         {}},
                             {"HTTPDEBUG",     {}},
                             {"MQTTDEBUG",     {}},
@@ -102,7 +102,7 @@ private:
                             {"light_presets", {}},
                     });
 
-    void registerNodeCommands(const std::string &path, JsonVariant variant, CommandNode *parentNode, JsonVariant doc);
+    void registerNodeCommands(const String &path, JsonVariant variant, CommandNode *parentNode, JsonVariant doc);
 };
 
 #endif // EEPROM_UTILS_H

@@ -12,7 +12,7 @@ void LightHandler::lightInitiation() {
     for (JsonVariant v: superCube->config_manager->getConfig()["light"].as<JsonArray>()) {
         std::unique_ptr<Shell> shell = std::make_unique<Shell>(superCube);
         shell->jsonDoc.clear();
-        std::string buffer;
+        String buffer;
         serializeJson(v, buffer);
         deserializeJson(shell->jsonDoc, buffer);
         shell->jsonDoc["command"] = "Server_NeoPixel";

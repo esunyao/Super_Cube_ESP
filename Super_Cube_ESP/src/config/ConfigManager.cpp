@@ -110,7 +110,7 @@ bool ConfigManager::validateConfig() {
 
 template<typename T>
 CommandNode *
-ConfigManager::_init_generic(std::string node, JsonVariant doc, std::function<void(JsonVariant, T)> setter) {
+ConfigManager::_init_generic(String node, JsonVariant doc, std::function<void(JsonVariant, T)> setter) {
     return superCube->command_registry->Literal("set")
             ->then(superCube->command_registry
                            ->Param<T>("value")
@@ -118,7 +118,7 @@ ConfigManager::_init_generic(std::string node, JsonVariant doc, std::function<vo
                                                             const R &context) {
                                setter(doc, context.get<T>("value"));
                                shell->println((TypeName<T>::get() + " Completely set " +
-                                               context.get<std::string>("value")).c_str());
+                                               context.get<String>("value")).c_str());
                                saveConfig();
                            })
             );
@@ -128,25 +128,25 @@ void ConfigManager::_init_get(Shell *shell, const R &context, JsonVariant doc) {
     shell->println(doc.as<String>().c_str());
 }
 
-CommandNode *ConfigManager::_init_stringer(std::string node, JsonVariant doc) {
-    return _init_generic<std::string>(std::move(node), std::move(doc), [](JsonVariant doc, std::string value) {
+CommandNode *ConfigManager::_init_stringer(String node, JsonVariant doc) {
+    return _init_generic<String>(std::move(node), std::move(doc), [](JsonVariant doc, String value) {
         doc.set(value.c_str());
     });
 }
 
-CommandNode *ConfigManager::_init_boolean(std::string node, JsonVariant doc) {
+CommandNode *ConfigManager::_init_boolean(String node, JsonVariant doc) {
     return _init_generic<bool>(std::move(node), std::move(doc), [](JsonVariant doc, bool value) {
         doc.set(value);
     });
 }
 
-CommandNode *ConfigManager::_init_inter(std::string node, JsonVariant doc) {
+CommandNode *ConfigManager::_init_inter(String node, JsonVariant doc) {
     return _init_generic<int>(std::move(node), std::move(doc), [](JsonVariant doc, int value) {
         doc.set(value);
     });
 }
 
-void ConfigManager::registerNodeCommands(const std::string &path, JsonVariant variant, CommandNode *parentNode,
+void ConfigManager::registerNodeCommands(const String &path, JsonVariant variant, CommandNode *parentNode,
                                          JsonVariant doc) {
     if (path == "light" || path == "light_presets") {
         parentNode->runs(std::bind(&ConfigManager::_init_get, this, std::placeholders::_1, std::placeholders::_2, doc));
@@ -168,7 +168,7 @@ void ConfigManager::registerNodeCommands(const std::string &path, JsonVariant va
         for (JsonPair kv: variant.as<JsonObject>()) {
             if (kv.key() == "light" || kv.key() == "light_presets")
                 continue;
-            std::string newPath = path.empty() ? kv.key().c_str() : path + "." + kv.key().c_str();
+            String newPath = std::string(path.c_str()).empty() ? kv.key().c_str() : path + "." + kv.key().c_str();
             CommandNode *subNode = superCube->command_registry->Literal(kv.key().c_str());
 
             // 获取当前 doc 的子成员，确保递归进入到下一层嵌套对象
@@ -222,7 +222,7 @@ void ConfigManager::command_initialize() {
 //        if (key.second.empty()) {
 //            if (configDoc[key.first].is<int>()) {
 //                literal->then(_init_inter(key.first));
-//            } else if (configDoc[key.first].is<std::string>() || configDoc[key.first].is<String>()) {
+//            } else if (configDoc[key.first].is<String>() || configDoc[key.first].is<String>()) {
 //                literal->then(_init_stringer(key.first));
 //            } else if (configDoc[key.first].is<bool>()) {
 //                literal->then(_init_boolean(key.first));

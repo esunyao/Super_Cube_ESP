@@ -50,18 +50,18 @@ private:
 
 class TYPE {
 public:
-    static const std::string STRING() { return "STRING"; }
+    static const String STRING() { return "STRING"; }
 
-    static const std::string BOOLEAN() { return "BOOLEAN"; }
+    static const String BOOLEAN() { return "BOOLEAN"; }
 
-    static const std::string INTEGER() { return "INTEGER"; }
+    static const String INTEGER() { return "INTEGER"; }
 
-    static const std::string NONE() { return "NONE"; }
+    static const String NONE() { return "NONE"; }
 };
 
-class R : public std::map<std::string, std::variant<int, std::string, bool>> {
+class R : public std::map<String, std::variant<int, String, bool>> {
 public:
-    using Base = std::map<std::string, std::variant<int, std::string, bool>>;
+    using Base = std::map<String, std::variant<int, String, bool>>;
 
     using Base::operator[];
     using Base::at;
@@ -75,7 +75,7 @@ public:
     using Base::clear;
 
     template<typename T>
-    T get(const std::string &key) const {
+    T get(const String &key) const {
         auto it = this->find(key);
         if (it != this->end()) {
             // 使用 std::get_if 来检查类型是否匹配
@@ -94,9 +94,9 @@ public:
             shell->print(", Value: ");
             if (std::holds_alternative<int>(value)) {
                 shell->println(std::to_string(std::get<int>(value)).c_str());
-            } else if (std::holds_alternative<std::string>(value)) {
+            } else if (std::holds_alternative<String>(value)) {
                 shell->println(
-                        std::get<std::string>(value).c_str());
+                        std::get<String>(value).c_str());
             } else if (std::holds_alternative<bool>(value)) {
                 shell->println(std::to_string(std::get<bool>(value)).c_str());
             }
@@ -111,57 +111,57 @@ public:
 
     explicit CommandNode();
 
-    explicit CommandNode(const std::string &name);
+    explicit CommandNode(const String &name);
 
-    explicit CommandNode(const std::string &name, const std::string &type);
+    explicit CommandNode(const String &name, const String &type);
 
     CommandNode *then(CommandNode *next);
 
     CommandNode *runs(CommandFunction func);
 
-    const CommandNode *find_node(const std::vector<std::string> &path, R &context) const;
+    const CommandNode *find_node(const std::vector<String> &path, R &context) const;
 
     void execute(Shell *shell, const R &context) const;
 
-    const std::string &get_name() const;
+    const String &get_name() const;
 
     void printTree(int level = 0) const;
 
 private:
-    std::string name;
-    std::string type;
+    String name;
+    String type;
     CommandFunction commandFunc;
-    std::map<std::string, std::unique_ptr<CommandNode>> children;
+    std::map<String, std::unique_ptr<CommandNode>> children;
 };
 
 class CommandRegistry {
 public:
     void register_command(std::unique_ptr<CommandNode> root);
 
-    std::unique_ptr<Shell> execute_command(std::unique_ptr<Shell> shell, const std::string &input) const;
+    std::unique_ptr<Shell> execute_command(std::unique_ptr<Shell> shell, const String &input) const;
 
     void printCommandTree() const;
 
     // 修改后的工厂方法封装参数类型并返回 std::unique_ptr<CommandNode>
-    CommandNode *Literal(const std::string &name) {
+    CommandNode *Literal(const String &name) {
         return new CommandNode(name);
     }
 
-    CommandNode *StringParam(const std::string &name) {
+    CommandNode *StringParam(const String &name) {
         return new CommandNode(name, TYPE::STRING());
     }
 
-    CommandNode *BooleanParam(const std::string &name) {
+    CommandNode *BooleanParam(const String &name) {
         return new CommandNode(name, TYPE::BOOLEAN());
     }
 
-    CommandNode *IntegerParam(const std::string &name) {
+    CommandNode *IntegerParam(const String &name) {
         return new CommandNode(name, TYPE::INTEGER());
     }
 
     template<typename T>
     CommandNode *Param(const char *name) {
-        if constexpr (std::is_same<T, std::string>::value) {
+        if constexpr (std::is_same<T, String>::value) {
             return new CommandNode(name, TYPE::STRING());
         } else if constexpr (std::is_same<T, bool>::value) {
             return new CommandNode(name, TYPE::BOOLEAN());
@@ -174,7 +174,7 @@ public:
 
 
 private:
-    std::map<std::string, std::unique_ptr<CommandNode>> commands;
+    std::map<String, std::unique_ptr<CommandNode>> commands;
 };
 
 #endif // COMMAND_MANAGER_H
