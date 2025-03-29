@@ -114,6 +114,7 @@ public:
     std::unique_ptr<MqttService> mqttService;
     std::unique_ptr<LightHandler> lightHandler;
     std::unique_ptr<AttitudeService> attitudeService;
+    std::unique_ptr<Adafruit_NeoPixel> adafruitNeoPixel;
 protected:
     template<typename Func>
     void _running(Func func, bool running) {

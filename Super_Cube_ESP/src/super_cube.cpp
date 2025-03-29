@@ -19,7 +19,7 @@ super_cube::super_cube(HardwareSerial *serial) : command_registry(new CommandReg
                                                  config_manager(&ConfigManager::getInstance(this)),
                                                  lightHandler(std::make_unique<LightHandler>(this)),
                                                  serialHandler(new SerialHandler(this, this->serial)) {
-
+    adafruitNeoPixel.reset();
 }
 
 super_cube::~super_cube() {
@@ -201,16 +201,11 @@ void super_cube::_command_register() const {
             std::unique_ptr<CommandNode>(
                     command_registry->Literal("Server_NeoPixel")->runs(
                             [](Shell *shelll, const R &context) {
-                                // {"command": "Server_NeoPixel", "pin": 1, "r": 255, "g": 255, "b": 255, "bright": 255, "num": ["0-3"]}
+                                // {"command": "Server_NeoPixel", "pin": 1, "r": 255, "g": 255, "b": 255, "bright": 255, "num": ["0-3"], "show": false}
                                 // {"command": "Server_NeoPixel", "presets": ""}
-                                std::map<int, const uint8_t> pinMap = {
-                                        {1, D1},
-                                        {2, D2},
-                                        {3, D3},
-                                        {4, D4},
-                                        {5, D5},
-                                        {6, D6}
-                                };
+                                bool show = shelll->jsonDoc.operator[]("show").is<bool>() ? shelll->jsonDoc.operator[](
+                                        "show").as<bool>() : true;
+
                                 if (shelll->jsonDoc.operator[]("save").is<bool>())
                                     if (shelll->jsonDoc.operator[]("save").as<bool>()) {
                                         shelll->jsonDoc.remove("save");
@@ -219,6 +214,7 @@ void super_cube::_command_register() const {
                                         shelll->getSuperCube()->config_manager->getConfig()["light"].as<JsonArray>().add(
                                                 *copiedDoc);
                                         shelll->getSuperCube()->config_manager->saveConfig();
+                                        shelll->getSuperCube()->debugln("Saved");
                                     }
                                 if (shelll->jsonDoc.operator[]("presets").is<std::string>()) {
                                     JsonObject presets = shelll->getSuperCube()->config_manager->getConfig()["light_presets"][shelll->jsonDoc.operator[](
@@ -228,37 +224,69 @@ void super_cube::_command_register() const {
                                     shelll->jsonDoc.operator[]("b") = presets["b"];
                                     shelll->jsonDoc.operator[]("bright") = presets["bright"];
                                 }
-                                std::unique_ptr<Adafruit_NeoPixel> stripasd = std::make_unique<Adafruit_NeoPixel>(25,
-                                                                                                                  pinMap[shelll->jsonDoc.operator[](
-                                                                                                                          "pin").as<int>()],
-                                                                                                                  NEO_GRB +
-                                                                                                                  NEO_KHZ800);
-                                stripasd->begin();
-                                for (JsonVariant v: shelll->jsonDoc.operator[]("num").as<JsonArray>()) {
-                                    if (v.as<int>())
-                                        stripasd->setPixelColor(v.as<int>(),
-                                                                stripasd->Color(
-                                                                        shelll->jsonDoc.operator[]("r").as<int>() | 0,
-                                                                        shelll->jsonDoc.operator[]("g").as<int>() | 0,
-                                                                        shelll->jsonDoc.operator[]("b").as<int>() |
-                                                                        0));
-                                    else {
-                                        std::regex pattern(R"((\d+)-(\d+))");
-                                        std::smatch matches;
-                                        std::string str = v.as<String>().c_str();
-                                        if (std::regex_search(str, matches, pattern))
-                                            for (int i = std::stoi(matches[1].str());
-                                                 i <= std::stoi(matches[2].str()); i++)
-                                                stripasd->setPixelColor(i, stripasd->Color(
-                                                        shelll->jsonDoc.operator[]("r").as<int>() | 0,
-                                                        shelll->jsonDoc.operator[]("g").as<int>() | 0,
-                                                        shelll->jsonDoc.operator[]("b").as<int>() | 0));
-                                    }
+                                std::unique_ptr<Adafruit_NeoPixel> stripasd;
+                                if (shelll->getSuperCube()->adafruitNeoPixel != nullptr) {
+                                    stripasd = std::move(
+                                            shelll->getSuperCube()->adafruitNeoPixel);
+                                    shelll->getSuperCube()->debugln("Use Old Object");
+                                } else {
+                                    std::map<int, const uint8_t> pinMap = {
+                                            {1, D1},
+                                            {2, D2},
+                                            {3, D3},
+                                            {4, D4},
+                                            {5, D5},
+                                            {6, D6}
+                                    };
+                                    const uint8_t pin = pinMap[shelll->jsonDoc.operator[]("pin").as<int>()];
+                                    stripasd = std::make_unique<Adafruit_NeoPixel>(
+                                            25,
+                                            pin,
+                                            NEO_GRB +
+                                            NEO_KHZ800);
+                                    stripasd->begin();
+                                    shelll->getSuperCube()->debugln("Begin a new Object");
                                 }
-                                stripasd->setBrightness(shelll->jsonDoc.operator[]("bright"));
-                                stripasd->show();
-                                shelll->println("Lighting up");
-                                stripasd.reset();
+                                if (shelll->jsonDoc.operator[]("num").as<JsonArray>() &&
+                                    shelll->jsonDoc.operator[]("bright")) {
+                                    shelll->getSuperCube()->debugln("Setting....");
+                                    for (JsonVariant v: shelll->jsonDoc.operator[]("num").as<JsonArray>()) {
+                                        if (v.as<int>())
+                                            stripasd->setPixelColor(v.as<int>(),
+                                                                    stripasd->Color(
+                                                                            shelll->jsonDoc.operator[]("r").as<int>() |
+                                                                            0,
+                                                                            shelll->jsonDoc.operator[]("g").as<int>() |
+                                                                            0,
+                                                                            shelll->jsonDoc.operator[]("b").as<int>() |
+                                                                            0));
+                                        else {
+                                            std::regex pattern(R"((\d+)-(\d+))");
+                                            std::smatch matches;
+                                            std::string str = v.as<String>().c_str();
+                                            if (std::regex_search(str, matches, pattern))
+                                                for (int i = std::stoi(matches[1].str());
+                                                     i <= std::stoi(matches[2].str()); i++)
+                                                    stripasd->setPixelColor(i, stripasd->Color(
+                                                            shelll->jsonDoc.operator[]("r").as<int>() | 0,
+                                                            shelll->jsonDoc.operator[]("g").as<int>() | 0,
+                                                            shelll->jsonDoc.operator[]("b").as<int>() | 0));
+                                        }
+                                    }
+                                    stripasd->setBrightness(shelll->jsonDoc.operator[]("bright"));
+                                    shelll->println("Setting up");
+                                }
+                                if (show) {
+                                    shelll->println(stripasd->canShow() ? "Can Show" : "Cannot Show");
+                                    stripasd->show();
+                                    stripasd.reset();
+                                    shelll->getSuperCube()->adafruitNeoPixel.reset();
+                                    shelll->println("Lighting up");
+                                    return;
+                                }else {
+                                    shelll->getSuperCube()->adafruitNeoPixel = std::move(stripasd);
+                                    shelll->println("Setting up");
+                                }
                             })));
 }
 

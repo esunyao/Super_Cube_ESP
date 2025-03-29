@@ -4,8 +4,6 @@
 #include "main_.h"
 #include <Arduino.h>
 #include "super_cube.h"
-#include <uuid/common.h>
-#include <uuid/console.h>
 
 #include "Wire.h"
 
