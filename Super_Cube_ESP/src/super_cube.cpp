@@ -256,10 +256,10 @@ void super_cube::_command_register() const {
                                                                             shelll->jsonDoc.operator[]("b").as<int>() |
                                                                             0));
                                         else {
+                                            String numStr = v.as<String>();
                                             std::regex pattern(R"((\d+)-(\d+))");
                                             std::cmatch matches;
-                                            const char *str = v.as<String>().c_str();
-                                            if (std::regex_search(str, matches, pattern))
+                                            if (std::regex_search(numStr.c_str(), matches, pattern))
                                                 for (int i = std::stoi(matches[1].str());
                                                      i <= std::stoi(matches[2].str()); i++)
                                                     stripasd->setPixelColor(i, stripasd->Color(

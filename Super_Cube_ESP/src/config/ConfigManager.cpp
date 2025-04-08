@@ -202,6 +202,17 @@ void ConfigManager::command_initialize() {
                 shell->println(superCube->config_manager->getConfig().as<String>().c_str());
             })
     );
+    literal->then(
+            superCube->command_registry->Literal("light")->then(
+                    superCube->command_registry->Literal("get")->runs([this](Shell *shell, const R &context) {
+                        shell->println(superCube->config_manager->getConfig().operator[]("light").as<String>().c_str());
+                    }))->then(superCube->command_registry->Literal("set")->runs([this](Shell *shell, const R &context) {
+                superCube->config_manager->getConfig().operator[]("light").clear();
+                superCube->config_manager->getConfig().operator[]("light").set(shell->jsonDoc["light"]);
+                superCube->config_manager->saveConfig();
+                shell->println("Config Replace Successful");
+            }))
+    );
 
     literal->then(superCube->command_registry->Literal("setFromJson")->runs(
             [this](Shell *shell, const R &context) {
