@@ -398,6 +398,7 @@ void AttitudeService::InitializeCommand() {
                                                                              out_put = shelll->jsonDoc["out_put"];
                                                                          JsonDocument data = shelll->getSuperCube()->attitudeService->GetData(
                                                                                  out_put, "");
+                                                                         data["msg_id"] = shelll->jsonDoc["msg_id"];
                                                                          String dataStr;
                                                                          serializeJson(data, dataStr);
                                                                          if (shelll->getSuperCube() ||
