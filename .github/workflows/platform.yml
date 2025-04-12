@@ -34,5 +34,5 @@ jobs:
         with:
           name: output-files
           path: |
-            ./Super_Cube_ESP/.pio/build/nodemcuv2/firmware.bin
-            ./Super_Cube_ESP/.pio/build/nodemcuv2/firmware.elf
+            ./Super_Cube_ESP/.pio/build/nodemcuv2_main/firmware.bin
+            ./Super_Cube_ESP/.pio/build/nodemcuv2_main/firmware.elf
